@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class BaseBody extends StatelessWidget {
   const BaseBody({

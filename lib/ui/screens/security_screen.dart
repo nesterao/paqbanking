@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pa_quick_banking/data/controller/account_controller.dart';
 
-import '../../data/controller/controller.dart';
-import '../../data/model/model.dart';
-import '../../shared/shared.dart';
-import '../widgets/widgets.dart';
+import '../../shared/exported_shared.dart';
+import '../widgets/exported_widgets.dart';
 
 class SecurityScreen extends StatefulWidget {
   static const String routeName = '/security_screen';
@@ -45,7 +45,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
       TextEditingController();
 
   FocusNode accountType;
-  FocusNode kycLevel;
   FocusNode firstName;
   FocusNode surname;
   FocusNode dateOfBirth;
@@ -65,9 +64,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    // _listenOTP();
     accountType = FocusNode();
-    kycLevel = FocusNode();
     firstName = FocusNode();
     surname = FocusNode();
     dateOfBirth = FocusNode();
@@ -88,7 +85,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
   void dispose() {
     // TODO: implement dispose
     accountType = FocusNode();
-    kycLevel = FocusNode();
     firstName = FocusNode();
     surname = FocusNode();
     dateOfBirth = FocusNode();
@@ -114,14 +110,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
     FocusScope.of(context).requestFocus(nextFocus);
   }
 
+  void getter() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    final AccountData _accountData =
-        ModalRoute.of(context).settings.arguments as AccountData;
+    final int _source = _accountController.source;
 
+    debugPrintSynchronously(_accountController.source.toString());
     Future<dynamic> submit() async {
       if (_formKey.currentState.validate()) {
-        _accountController.validatePIN(accountData: _accountData);
         setState(() {});
       }
     }
@@ -142,87 +141,316 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 children: <Widget>[
                   BaseInputField(
                     autoFocus: true,
-                    // inputFocusNode: phoneNumberFocusNode,
-                    inputLabel: 'Phone Number',
+                    inputFocusNode: accountType,
+                    labelText: 'Account Type',
                     inputMaxLength: 10,
-                    // inputController: _phoneNumberTextFieldController,
-                    inputType: TextInputType.number,
+                    inputController: accountTypeTextEditingController,
+                    inputType: TextInputType.text,
                     inputLetterSpacing: displayWidth(context) * 0.01,
                     textInputAction: TextInputAction.next,
                     // inputFormatter: <TextInputFormatter>[
                     //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
                     // ],
-                    inputValidator: (String value) {
-                      const String pattern = r'(^0[2,5]{1}[0-9]+$)';
-                      final RegExp regExp = RegExp(pattern);
-                      if (value.isEmpty) {
-                        return 'Please enter your mobile number';
-                      } else if (!regExp.hasMatch(value)) {
-                        return '''
-Please enter a valid 10-digit mobile number''';
-                      }
-                      debugPrint(value);
-                      return null;
+                    inputOnFieldSubmitted: (String term) {
+                      _fieldFocusChange(
+                        context,
+                        accountType,
+                        firstName,
+                      );
                     },
-                    // inputOnFieldSubmitted: (String term) {
-                    //   _fieldFocusChange(
-                    //     context,
-                    //     // phoneNumberFocusNode,
-                    //     // accountNumberFocusNode,
-                    //   );
-                    // },
+                  ),
+                  BaseInputField(
+                    inputFocusNode: firstName,
+                    labelText: 'First Name',
+                    inputController: firstNameTextEditingController,
+                    inputType: TextInputType.text,
+                    inputLetterSpacing: displayWidth(context) * 0.01,
+                    textInputAction: TextInputAction.next,
+                    // inputFormatter: <TextInputFormatter>[
+                    //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                    // ],
+                    inputOnFieldSubmitted: (String term) {
+                      _fieldFocusChange(
+                        context,
+                        firstName,
+                        surname,
+                      );
+                    },
+                  ),
+                  sizedBoxHeight(context, 0.02),
+                  BaseInputField(
+                    inputFocusNode: surname,
+                    labelText: 'Surname',
+                    inputController: surnameTextEditingController,
+                    inputType: TextInputType.text,
+                    inputLetterSpacing: displayWidth(context) * 0.01,
+                    textInputAction: TextInputAction.next,
+                    // inputFormatter: <TextInputFormatter>[
+                    //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                    // ],
+                    inputOnFieldSubmitted: (String term) {
+                      _fieldFocusChange(
+                        context,
+                        surname,
+                        firstName,
+                      );
+                    },
                   ),
                   sizedBoxHeight(context, 0.02),
                   // BaseInputField(
                   //   autoFocus: true,
-                  //   labelText: 'The name of your favorite city in the world?',
-                  //   inputHintText: 'Favorite City',
-                  //   inputController: _favoriteCity,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
                   // ),
+                  // sizedBoxHeight(context, 0.02),
                   // BaseInputField(
-                  //   labelText: 'The name of your favorite pet?',
-                  //   inputHintText: 'Favorite Pet',
-                  //   inputController: _favoritePet,
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
                   // ),
+                  // sizedBoxHeight(context, 0.02),
                   // BaseInputField(
-                  //   // ignore: avoid_escaping_inner_quotes
-                  //   labelText: 'Your mother\'s maiden name?',
-                  //   inputHintText: 'Mothers maiden name',
-                  //   inputController: _mothersMaidenName,
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
                   // ),
+                  // sizedBoxHeight(context, 0.02),
                   // BaseInputField(
-                  //   labelText: 'The ID type you used for account creation?',
-                  //   inputHintText: 'National ID',
-                  //   inputController: _idType,
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
                   // ),
+                  // sizedBoxHeight(context, 0.02),
                   // BaseInputField(
-                  //   labelText: 'Your next of kin phone number?',
-                  //   inputHintText: '0212 345 678',
-                  //   inputController: _nextOfKinPhoneNumber,
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
                   // ),
-                  // Row(
-                  //   children: <Widget>[
-                  //     Expanded(
-                  //       child: PrimaryButton(
-                  //         onTap: () {
-                  //           Get.toNamed(LoginScreen.routeName);
-                  //           // Navigator.of(context).pushNamed();
-                  //         },
-                  //         text: 'Next',
-                  //       ),
-                  //     ),
-                  //     sizedBoxWidth(context, 0.04),
-                  //     // SizedBox(width: 8,),
-                  //     Expanded(
-                  //       child: SecondaryButton(
-                  //         onTap: () {
-                  //           Navigator.of(context).pop();
-                  //         },
-                  //         text: 'Cancel',
-                  //       ),
-                  //     ),
-                  //   ],
+                  // sizedBoxHeight(context, 0.02),
+                  // BaseInputField(
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
                   // ),
+                  // sizedBoxHeight(context, 0.02),
+                  // BaseInputField(
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
+                  // ),
+                  // sizedBoxHeight(context, 0.02),
+                  // BaseInputField(
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
+                  // ),
+                  // sizedBoxHeight(context, 0.02),
+                  // BaseInputField(
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
+                  // ),
+                  // sizedBoxHeight(context, 0.02),
+                  // BaseInputField(
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
+                  // ),
+                  // sizedBoxHeight(context, 0.02),
+                  // BaseInputField(
+                  //   autoFocus: true,
+                  //   inputFocusNode: accountType,
+                  //   inputLabel: 'Account Type',
+                  //   inputMaxLength: 10,
+                  //   inputController: accountTypeTextEditingController,
+                  //   inputType: TextInputType.text,
+                  //   inputLetterSpacing: displayWidth(context) * 0.01,
+                  //   textInputAction: TextInputAction.next,
+                  //   // inputFormatter: <TextInputFormatter>[
+                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                  //   // ],
+                  //   inputOnFieldSubmitted: (String term) {
+                  //     _fieldFocusChange(
+                  //       context,
+                  //       accountType,
+                  //       firstName,
+                  //     );
+                  //   },
+                  // ),
+                  sizedBoxHeight(context, 0.02),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: PrimaryButton(
+                          onTap: () {
+                            // Get.toNamed(LoginScreen.routeName);
+                            // Navigator.of(context).pushNamed();
+                          },
+                          text: 'Next',
+                        ),
+                      ),
+                      sizedBoxWidth(context, 0.04),
+                      // SizedBox(width: 8,),
+                      Expanded(
+                        child: SecondaryButton(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                          text: 'Cancel',
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

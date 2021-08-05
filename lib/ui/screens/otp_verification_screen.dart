@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pa_quick_banking/data/controller/account_controller.dart';
+import 'package:get/get.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
-import '../../data/model/model.dart';
-import '../../shared/shared.dart';
-import '../widgets/widgets.dart';
+import '../../data/controller/exported_controllers.dart';
+import '../../shared/exported_shared.dart';
+import '../widgets/exported_widgets.dart';
 
 class OTPVerification extends StatefulWidget {
   static const String routeName = '/otp_verification';
@@ -18,7 +18,8 @@ class _OTPVerificationState extends State<OTPVerification> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _otpVerificationController =
       TextEditingController();
-  final AccountController _accountController = AccountController();
+
+  final AccountController _accountController = Get.find();
 
   final String _code = '';
   String signature = '{{ app signature }}';
@@ -28,6 +29,7 @@ class _OTPVerificationState extends State<OTPVerification> {
   @override
   void initState() {
     // TODO: implement initState
+    listenForCode();
     _otpVerificationFocusNode = FocusNode();
     super.initState();
   }
@@ -40,18 +42,15 @@ class _OTPVerificationState extends State<OTPVerification> {
     super.dispose();
   }
 
+  void listenForCode() async {
+    await SmsAutoFill().listenForCode;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final AccountData _accountData =
-        ModalRoute.of(context).settings.arguments as AccountData;
-    debugPrintSynchronously(_accountData.toJson());
-
     Future<dynamic> submit() async {
       if (_formKey.currentState.validate()) {
-        _accountData.accountDetails.otp = _otpVerificationController.text;
-        _accountController.validateOTP(
-          accountData: _accountData,
-        );
+        _accountController.validateOTP(_otpVerificationController.text);
         setState(() {
           _otpVerificationController.text = '';
         });
@@ -87,7 +86,7 @@ class _OTPVerificationState extends State<OTPVerification> {
                       ),
                       sizedBoxHeight(context, 0.02),
                       Text(
-                        '(${_accountData.accountDetails.phoneNumber})',
+                        '(${_accountController.accountDto.phoneNumber})',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headline6.copyWith(
                               letterSpacing: 4,
@@ -104,24 +103,29 @@ class _OTPVerificationState extends State<OTPVerification> {
                             ),
                       ),
                       sizedBoxHeight(context, 0.04),
-                      PinFieldAutoFill(
-                        codeLength: 5,
-                        decoration: UnderlineDecoration(
-                          textStyle: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.black,
+                      Visibility(
+                        visible: false,
+                        child: PinFieldAutoFill(
+                          codeLength: 5,
+                          controller: _otpVerificationController,
+                          decoration: UnderlineDecoration(
+                            textStyle: const TextStyle(
+                              fontSize: 20,
+                              color: Colors.black,
+                            ),
+                            colorBuilder: FixedColorBuilder(
+                              Colors.black.withOpacity(0.3),
+                            ),
                           ),
-                          colorBuilder: FixedColorBuilder(
-                            Colors.black.withOpacity(0.3),
-                          ),
+                          currentCode: _code,
+                          onCodeChanged: (String code) {
+                            if (code.length == 5) {
+                              debugPrintSynchronously(_code.toString());
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              submit();
+                            }
+                          },
                         ),
-                        currentCode: _code,
-                        onCodeSubmitted: (String code) {},
-                        onCodeChanged: (String code) {
-                          if (code.length == 5) {
-                            FocusScope.of(context).requestFocus(FocusNode());
-                          }
-                        },
                       ),
                       BasePinInput(
                         autoFocus: true,
@@ -146,7 +150,11 @@ class _OTPVerificationState extends State<OTPVerification> {
                       ),
                       sizedBoxHeight(context, 0.04),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          _accountController.verifyPhoneNumber(
+                            _accountController.accountDto.phoneNumber,
+                          );
+                        },
                         child: Text(
                           'Resend code'.toUpperCase(),
                           style: Theme.of(context).textTheme.headline1.copyWith(

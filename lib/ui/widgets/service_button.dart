@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class ServiceButton extends StatelessWidget {
   const ServiceButton({Key key, this.onTap, this.text}) : super(key: key);

@@ -1,356 +1,178 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:sms_autofill/sms_autofill.dart';
+import 'package:pa_quick_banking/data/model/form_content.dart';
 
-import '../../ui/screens/screens.dart';
-import '../../ui/widgets/widgets.dart';
-import '../helpers/helpers.dart';
-import '../model/model.dart';
-import '../services/services.dart';
-import 'controller.dart';
+import '../../ui/screens/exported_screens.dart';
+import '../../ui/widgets/exported_widgets.dart';
+import '../constants/exported_constants.dart';
+import '../model/exported_models.dart';
+import '../services/request_manager.dart';
 
-class AccountController extends GetxController with BaseController {
-  // APIs _apIs = APIs();
+class AccountController extends GetxController {
+  bool isLoading = false.obs();
+  AccountDto accountDto = AccountDto(phoneNumber: '').obs();
+  SecurityDto securityDto = SecurityDto().obs();
+  List<Question> questions = <Question>[].obs();
+  FormContent formContent = FormContent().obs();
+  int source = 0.obs();
+  int _retry = 0;
 
-  static const String _verifyPhoneNumberAPI = '/api/Mobile/verifyPhoneNumber';
-  static const String _checkAccForLinkAPI =
-      '/api/Mobile/checkAccountForLinking';
-  static const String _validatePinForLinkingAPI =
-      '/api/Mobile/validatePinForLinking';
-  static const String _validateOtpForLinkingAPI =
-      '/api/Mobile/validateOtpForLinking';
+  void _endLoading() {
+    isLoading = false;
+    DialogHelper.hideLoading();
+  }
 
-  RxBool isLoading = false.obs;
-
-  Account _account = Account().obs();
-  AccountInDB accountInDB = AccountInDB().obs();
-  ValidationResponseModel _validationResponse = ValidationResponseModel();
-  List<AccountInDB> accountInDBList = <AccountInDB>[AccountInDB()].obs;
-
-  final DatabaseHelper _databaseHelper = DatabaseHelper();
-
-  // Future<void> submit
-
-  Future<void> verifyPhoneNumber({String phoneNumber}) async {
-    isLoading(true);
+  void _startLoading() {
+    isLoading = true;
     DialogHelper.showLoading();
-    Response<dynamic> _res;
+  }
+
+  Future<void> verifyPhoneNumber(String phoneNumber) async {
+    _startLoading();
+    Map<String, dynamic> _responseData;
     try {
-      _res = await BaseClient().verifyPhoneNumber(
-        _verifyPhoneNumberAPI,
-        phoneNumber,
+      final Response<dynamic> response = await RequestManager().postRequest(
+        APIs.verifyPhoneNumberUrl,
+        postQuery: <String, dynamic>{'phoneNumber': phoneNumber},
       );
-      _validationResponse = ValidationResponseModel.fromJson(_res.bodyString);
-      DialogHelper.hideLoading();
-      if (_validationResponse.successful) {
-        _account.accountData.accountDetails.phoneNumber = phoneNumber;
-        _account.accountData.accountDetails.tNcs =
-            _validationResponse.responseData.tNcs;
-        _account.accountData.requestMsg = 'verifyPhoneNumber';
-        Get.toNamed(
-          OTPVerification.routeName,
-          arguments: _account.accountData,
-        );
-        await SmsAutoFill().listenForCode;
-        DialogHelper.showSuccessSnackBar('Phone Number confirmed.'
-            '\n Please wait for your OTP for verification');
+
+      _responseData = jsonDecode(response.bodyString) as Map<String, dynamic>;
+      final bool isSuccessful = _responseData['successful'] as bool;
+      if (isSuccessful) {
+        final Map<String, dynamic> data =
+            _responseData['data'] as Map<String, dynamic>;
+        accountDto.phoneNumber = phoneNumber;
+        accountDto.token = data['token'] as String;
+        accountDto.tokenExpiry = DateTime.parse(data['tokenExpiry'] as String);
+        accountDto.termsAndConditions = data['termsAndConditions'] as String;
+        await fetchFormContent();
+        source = 1;
+        _endLoading();
+        Get.toNamed(OTPVerification.routeName);
       } else {
-        //TODO: Handle _account .
+        _endLoading();
         DialogHelper.showErrorDialog(
-          description: '(Create Account Error Message.'
-              '\n ${_account.msg})',
+            title: Constants.errorTitle,
+            description: _responseData['msg'] as String);
+      }
+    } catch (e) {
+      _endLoading();
+      DialogHelper.showErrorDialog(
+        title: Constants.errorTitle,
+      );
+    }
+  }
+
+  Future<void> validateOTP(String otp) async {
+    _startLoading();
+    if (source == 1) {
+      Map<String, dynamic> _responseData;
+      try {
+        final Response<dynamic> response = await RequestManager().postRequest(
+          APIs.validateOtpForNewRegistrationUrl,
+          postHeader: <String, String>{'opToken': accountDto.token},
+          postQuery: <String, dynamic>{'otp': otp},
+        );
+
+        _responseData = jsonDecode(response.bodyString) as Map<String, dynamic>;
+        final bool isSuccessful = _responseData['successful'] as bool;
+        if (isSuccessful) {
+          final Map<String, dynamic> data =
+              _responseData['data'] as Map<String, dynamic>;
+          accountDto.token = data['token'] as String;
+          accountDto.tokenExpiry =
+              DateTime.parse(data['tokenExpiry'] as String);
+          source = 1;
+          debugPrintSynchronously(source.toString());
+          _endLoading();
+          Get.toNamed(CreateAccountScreen.routeName);
+        } else {
+          _endLoading();
+          DialogHelper.showErrorDialog(
+              title: Constants.errorTitle,
+              description: _responseData['msg'] as String);
+        }
+      } catch (e) {
+        _endLoading();
+        DialogHelper.showErrorDialog(
+          title: Constants.errorTitle,
         );
       }
-    } catch (handleError) {
-      DialogHelper.hideLoading();
-      if (handleError is AppException) {
-        DialogHelper.showErrorDialog(
-          description: handleError.message,
-        );
+    }
+  }
+
+  Future<void> fetchFormContent() async {
+    _startLoading();
+    Map<String, dynamic> _resultsQuestions;
+    Map<String, dynamic> _resultsIdTypes;
+    Map<String, dynamic> _resultsTitles;
+
+    //
+    try {
+      final Response<dynamic> _responseQuestions =
+          await RequestManager().getRequest(
+        APIs.questionsUrl,
+        getHeader: <String, String>{'opToken': accountDto.token},
+      );
+      _resultsQuestions =
+          jsonDecode(_responseQuestions.bodyString) as Map<String, dynamic>;
+
+      final Response<dynamic> _responseIdTypes =
+          await RequestManager().getRequest(
+        APIs.idTypesUrl,
+        getHeader: <String, String>{'opToken': accountDto.token},
+      );
+      _resultsIdTypes =
+          jsonDecode(_responseIdTypes.bodyString) as Map<String, dynamic>;
+
+      final Response<dynamic> _responseTitles =
+          await RequestManager().getRequest(
+        APIs.titlesUrl,
+        getHeader: <String, String>{'opToken': accountDto.token},
+      );
+      _resultsTitles =
+          jsonDecode(_responseTitles.bodyString) as Map<String, dynamic>;
+
+      final bool isQuestionsSuccessful =
+          _resultsQuestions['successful'] as bool;
+      final bool isIdTypesSuccessful = _resultsIdTypes['successful'] as bool;
+      final bool isTitlesSuccessful = _resultsTitles['successful'] as bool;
+
+      if (isQuestionsSuccessful && isIdTypesSuccessful && isTitlesSuccessful) {
+        final List<Question> questions =
+            (_resultsQuestions['data'] as List<dynamic>)
+                .map((dynamic e) => Question.fromMap(e as Map<String, dynamic>))
+                .toList();
+        formContent.questions = questions;
+
+        final List<IdType> idTypes = (_resultsIdTypes['data'] as List<dynamic>)
+            .map((dynamic e) => IdType.fromMap(e as Map<String, dynamic>))
+            .toList();
+        formContent.idTypes = idTypes;
+
+        final List<String> titles = (_resultsTitles['data'] as List<dynamic>)
+            .map((dynamic e) => e as String)
+            .toList();
+        formContent.titles = titles;
       } else {
-        DialogHelper.showErrorDialog();
+        _endLoading();
+        if (_retry < 2) {
+          _retry++;
+          await fetchFormContent();
+        } else {
+          DialogHelper.showErrorDialog(
+            title: 'else',
+          );
+        }
       }
-    }
-    if (_res == null) return;
-    // }
-    isLoading(false);
-  }
-
-  Future<void> validateOTP({AccountData accountData}) async {
-    _account.accountData = accountData;
-    switch (_account.accountData.requestMsg) {
-      case 'verifyPhoneNumber':
-        Get.toNamed(
-          SecurityScreen.routeName,
-          arguments: _account.accountData,
-        );
-        return;
-        break;
-      default:
-        return;
-    }
-
-    // if(_account.accountData.requestMsg == 'verifyPhoneNumber'
-    // ) {
-    //   Get.toNamed(PinInput.routeName, arguments: _account.accountData);
-    // } else if (_account.accountData.isQuickAccount &&
-    //     !_account.accountData.accountDetails.otp.isBlank &&
-    //     !_account.accountData.accountDetails.pin.isBlank) {
-    //   _account.accountData = accountData;
-    //   Get.toNamed(SecurityScreen.routeName, arguments: _account.accountData);
-    // } else if()
-  }
-
-  Future<void> validatePIN({AccountData accountData}) async {
-    _account.accountData = accountData;
-    switch (_account.accountData.requestMsg) {
-      case 'verifyPhoneNumber':
-        Get.toNamed(SecurityScreen.routeName, arguments: _account.accountData);
-        return;
-        break;
-      default:
-        return;
-    }
-
-    // if(_account.accountData.requestMsg == 'verifyPhoneNumber'
-    // ) {
-    //   Get.toNamed(PinInput.routeName, arguments: _account.accountData);
-    // } else if (_account.accountData.isQuickAccount &&
-    //     !_account.accountData.accountDetails.otp.isBlank &&
-    //     !_account.accountData.accountDetails.pin.isBlank) {
-    //   _account.accountData = accountData;
-    //   Get.toNamed(SecurityScreen.routeName, arguments: _account.accountData);
-    // } else if()
-  }
-
-  Future<void> checkLinkAccount({
-    String phoneNumber,
-    String accountNumber,
-  }) async {
-    isLoading(true);
-    DialogHelper.showLoading();
-
-    final bool accountExist = await _databaseHelper.isAccountInDB(
-      phoneNumber,
-    );
-
-    if (accountExist) {
-      isLoading(false);
-      DialogHelper.hideLoading();
-      DialogHelper.showErrorSnackBar('Your Quick account is already linked. \n'
-          'Please login.');
-      Future.delayed(const Duration(seconds: 3), () {
-        if (Get.isDialogOpen) Get.back();
-        Get.toNamed(LoginScreen.routeName);
-      });
-    } else {
-      final CheckLinkAccountModel checkLinkAccount = CheckLinkAccountModel(
-        phoneNumber: phoneNumber,
-        accountNumber: accountNumber,
+    } catch (e) {
+      _endLoading();
+      DialogHelper.showErrorDialog(
+        title: Constants.errorTitle,
       );
-      Response<dynamic> _res;
-      try {
-        _res = await BaseClient().checkAccForLinking(
-          _checkAccForLinkAPI,
-          checkLinkAccount.toMap(),
-        );
-        _account = Account.fromJson(_res.bodyString);
-        DialogHelper.hideLoading();
-        if (_account.successful) {
-          Get.toNamed(
-            OTPVerification.routeName,
-            arguments: _account.accountData,
-          );
-          await SmsAutoFill().listenForCode;
-          DialogHelper.showSuccessSnackBar('Account Details Confirmed.'
-              '\n Please wait for your OTP for verification');
-        } else {
-          //TODO: Handle _account .
-          DialogHelper.showErrorDialog(
-            description: '(Account Error Message.'
-                '\n ${_account.msg})',
-          );
-        }
-      } catch (handleError) {
-        DialogHelper.hideLoading();
-        if (handleError is AppException) {
-          DialogHelper.showErrorDialog(
-            description: handleError.message,
-          );
-        } else {
-          DialogHelper.showErrorDialog();
-        }
-      }
-      if (_res == null) return;
-      // }
-      isLoading(false);
-    }
-
-    Future<void> validatePinForLink({AccountData accountData}) async {
-      isLoading(true);
-      DialogHelper.showLoading();
-
-      Response<dynamic> _res;
-      final ValidatePinModel _validatePin = ValidatePinModel(
-          pin: accountData.accountDetails.pin,
-          otp: accountData.accountDetails.otp);
-      try {
-        // _res = await BaseClient().validatePinForLinking(
-        //   _validatePinForLinking,
-        //   accountData.token,
-        //   _validatePin.toMap(),
-        // );
-        DialogHelper.hideLoading();
-        if (_account.successful) {
-          Get.toNamed(
-            OTPVerification.routeName,
-            arguments: _account.accountData,
-          );
-          await SmsAutoFill().listenForCode;
-          DialogHelper.showSuccessSnackBar('Account Details Confirmed.'
-              '\n Please wait for your OTP for verification');
-        } else {
-          //TODO: Handle _account .
-          DialogHelper.showErrorDialog(
-            description: '(Account Error Message.'
-                '\n ${_account.msg})',
-          );
-        }
-      } catch (handleError) {
-        DialogHelper.hideLoading();
-        if (handleError is AppException) {
-          DialogHelper.showErrorDialog(
-            description: handleError.message,
-          );
-        } else {
-          DialogHelper.showErrorDialog();
-        }
-      }
-      if (_res == null) return;
-
-      Get.toNamed(
-        PinInput.routeName,
-        arguments: accountData,
-      );
-      DialogHelper.showSuccessSnackBar('Quick Account Details Confirmed.'
-          '\n Please enter your PIN for verification');
-    }
-
-    // Future<void> validateOtpForLink({AccountData accountData}) async {
-    //   isLoading(true);
-    //   DialogHelper.showLoading();
-    //
-    //
-    //
-    //   if (_account.accountData.isQuickAccount &&
-    //       accountData.accountDetails.pin?.isEmpty == true) {
-    //
-    //   } else if(_account.accountData.isQuickAccount &&
-    //       accountData.accountDetails.pin?.isNotEmpty == true) {
-    //     Get.toNamed(
-    //       OTPVerification.routeName,
-    //       arguments: _account.accountData,
-    //     );
-    //     DialogHelper.showSuccessSnackBar('Account Details Confirmed.'
-    //         '\n Please wait for your OTP for verification');
-    //   }else if(!_account.accountData.isQuickAccount) {
-    //     Get.toNamed(
-    //       OTPVerification.routeName,
-    //       arguments: _account.accountData,
-    //     );
-    //     DialogHelper.showSuccessSnackBar('Account Details Confirmed.'
-    //         '\n Please wait for your OTP for verification');
-    //   }
-    //
-    //   if () {
-    //     final ValidatePinModel validatePin = ValidatePinModel(
-    //       otp: otp,
-    //       pin: accountData.accountDetails.pin,
-    //     );
-    //     _res = await BaseClient().validatePinForLinking(
-    //       _validatePinForLinking,
-    //       accountData.token,
-    //       accountData.accountDetails.pin,
-    //     );
-    //     _valRes = ValidationResponseModel.fromJson(_res.bodyString);
-    //     if (_valRes.successful) {
-    //       accountData.token = _valRes.responseData.token;
-    //       accountData.tokenExpiry = _valRes.responseData.tokenExpiry;
-    //       Get.offAll(
-    //         OTPVerification.routeName,
-    //         arguments: _account,
-    //       );
-    //       await SmsAutoFill().listenForCode;
-    //     } else {
-    //       DialogHelper.showErrorDialog(
-    //         description: '(Account Error Message.'
-    //             '\n ${_account.msg})',
-    //       );
-    //     }
-    //   } else {
-    //     _res = await BaseClient().validateOtpForLinking(
-    //       _validateOtpForLinking,
-    //       accountData.token,
-    //       validatePin.toMap(),
-    //       accountData.accountDetails.otp,
-    //     );
-    //   }
-    //   debugPrintSynchronously(_res.bodyString);
-    //
-    //   if (_valRes.successful) {
-    //     accountData.token = _valRes.responseData.token;
-    //     accountData.tokenExpiry = _valRes.responseData.tokenExpiry;
-    //     debugPrintSynchronously(_account.toJson());
-    //     Get.offAll(
-    //       MainScreen.routeName,
-    //       // arguments: _account,
-    //     );
-    //   } else {
-    //     DialogHelper.showErrorDialog(
-    //       description: '(Account Error Message.'
-    //           '\n ${_account.msg})',
-    //     );
-    //   }
-    //
-    //   // account = Account.fromJson(_res.bodyString);
-    //
-    //   if (_res == null) return;
-    //   isLoading(false);
-    // }
-
-    // Future<void> addAccountToDB(Account account) async {
-    //   DialogHelper.showLoading();
-    //   if (account.successful) {
-    //     accountInDB = AccountInDB(
-    //       token: account.accountData.token,
-    //       tokenExpiry: account.accountData.tokenExpiry,
-    //       name: account.accountData.accountDetails.name,
-    //       accountType: account.accountData.accountDetails.accountType,
-    //       kycLevel: account.accountData.accountDetails.kycLevel,
-    //       phoneNumber: account.accountData.accountDetails.phoneNumber,
-    //       accountNumber: account.accountData.accountDetails.accountNumber,
-    //     );
-    //     // await _databaseHelper.insertAccountInDB(accountInDB);
-    //     //TODO: Receive OTP and validate
-    //     DialogHelper.hideLoading();
-    //     if (account.accountData.isQuickAccount) {
-    //       Get.toNamed(PinInput.routeName);
-    //     } else {
-    //       Get.toNamed(OTPVerification.routeName);
-    //     }
-    //     DialogHelper.showSuccessSnackBar('Account Details Confirmed.'
-    //         '\n Please wait for your OTP for verification');
-    //   }
-    //   isLoading(false);
-    // }
-
-    Future<void> getAccountInDB() async {
-      await _databaseHelper
-          .getAccountInDB()
-          .then((List<Map<String, dynamic>> accounts) {
-        for (final Map<String, dynamic> account in accounts) {
-          accountInDBList.add(AccountInDB.fromMap(account));
-        }
-      });
+      debugPrintSynchronously(e.toString());
     }
   }
 }

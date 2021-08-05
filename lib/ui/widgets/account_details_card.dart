@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class AccountDetailsCard extends StatelessWidget {
   const AccountDetailsCard({

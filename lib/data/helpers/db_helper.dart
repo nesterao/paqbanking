@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../model/model.dart';
+import '../model/exported_models.dart';
 
 class DatabaseHelper {
   factory DatabaseHelper() =>
@@ -12,110 +10,106 @@ class DatabaseHelper {
 
   DatabaseHelper._createInstance();
 
+  static const String dbName = 'QuickBanking';
+  static const String tableUserAccounts = 'UserAccounts';
+
   static DatabaseHelper _databaseHelper;
   static Database _database;
 
-  Future<bool> checkDb() async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final String path = '${directory.path}accounts.db';
-    final bool exist = await databaseExists(path);
-    return exist;
-  }
-
-  Future<bool> tableIsNotEmpty() async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final Database db = await openDatabase('${directory.path}accounts.db');
-    final int count = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM accounts'),
-    );
-    final bool returnRes = count != null && count > 0;
-    return returnRes;
-  }
-
-  Future<bool> isAccountInDB(String phoneNumber) async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final Database db = await openDatabase('${directory.path}accounts.db');
-    final List<Map<String, Object>> count = await db.rawQuery(
-        // ignore: avoid_escaping_inner_quotes
-        'SELECT * FROM accounts WHERE phoneNumber = \'$phoneNumber\'');
-    final bool returnRes = count.isNotEmpty;
-    return returnRes;
+  Future<Database> initializeDatabase() async {
+    final Database database =
+        await openDatabase(dbName, version: 1, onCreate: _createDb);
+    return database;
   }
 
   Future<Database> get database async {
     return _database ??= await initializeDatabase();
   }
 
-  Future<Database> initializeDatabase() async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final String path = '${directory.path}accounts.db';
-
-    final Database accountDatabase =
-        await openDatabase(path, version: 1, onCreate: _createDb);
-    return accountDatabase;
-  }
-
   Future<void> _createDb(Database db, int newVersion) async {
     await db.execute('''
-CREATE TABLE accounts ( 
+CREATE TABLE $tableUserAccounts ( 
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   phoneNumber TEXT NOT NULL UNIQUE,
   accountNumber TEXT,
   token TEXT,
   tokenExpiry TEXT,
-  isLinked TEXT,
-  isLoggedIn TEXT,
+  availableBalance REAL,
+  actualBalance REAL,
   name TEXT,
   accountType TEXT,
+  firstName TEXT,
+  surname TEXT,
+  isQuickAccount INTEGER,
   kycLevel TEXT)
 ''');
   }
 
-  //Linked Account DB Helpers
-  Future<List<Map<String, dynamic>>> getAccountInDB() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.query(
-      'accounts',
-      orderBy: 'id ASC',
-    );
-    return result;
-  }
-
-  Future<int> insertAccountInDB(AccountInDB accountInDB) async {
+  Future<int> insertAccountInDB(UserAccount userAccount) async {
     final Database db = await database;
     final int result = await db.insert(
-      'accounts',
-      accountInDB.toMap(),
+      tableUserAccounts,
+      userAccount.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     return result;
   }
 
-  Future<int> updateAccountInDB(AccountInDB accountInDB) async {
+  Future<List<Map<String, dynamic>>> getAccountInDB() async {
     final Database db = await database;
-    final int result = await db.update(
-      'accounts',
-      accountInDB.toMap(),
-      where: 'id = ?',
-      // whereArgs: <int>[linkedAccount.id],
+    final List<Map<String, dynamic>> result = await db.query(
+      tableUserAccounts,
+      orderBy: 'id ASC',
     );
     return result;
   }
 
-  Future<List<AccountInDB>> getAccountInDBList() async {
-    final List<Map<String, dynamic>> accountInDBMapList =
-        await getAccountInDB();
-    final int count = accountInDBMapList.length;
-
-    final List<AccountInDB> accountInDBList = <AccountInDB>[];
-
-    for (int i = 0; i < count; i++) {
-      accountInDBList.add(AccountInDB.fromMap(accountInDBMapList[i]));
-    }
-    return accountInDBList;
+  Future<int> updateAccountInDB(UserAccount userAccount) async {
+    final Database db = await database;
+    final int result = await db.update(
+      tableUserAccounts,
+      userAccount.toMap(),
+      where: 'id = ?',
+    );
+    return result;
   }
 
-  Future<void> removeDB() async {
-    await _database.delete('accounts');
+  Future<bool> tableIsNotEmpty() async {
+    final Database db = await database;
+
+    final int _count = Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM $tableUserAccounts'));
+    // final int count =
+    // (await db.rawQuery('SELECT COUNT(*) FROM $tableUserAccounts')).length;
+    return _count != null && _count > 0;
+  }
+
+  Future<bool> isUserAccountInDB(String phoneNumber) async {
+    final Database db = await database;
+
+    final List<Map<String, Object>> count = await db.rawQuery(
+      // ignore: avoid_escaping_inner_quotes
+      'SELECT * FROM $tableUserAccounts WHERE phoneNumber = $phoneNumber',
+    );
+    return count.isNotEmpty;
+  }
+
+  //Linked Account DB Helpers
+
+  Future<List<UserAccount>> getUserAccountInDBList() async {
+    final List<Map<String, dynamic>> userAccountInDBMapList =
+        await getAccountInDB();
+    final int count = userAccountInDBMapList.length;
+
+    final List<UserAccount> userAccountInDBList = <UserAccount>[];
+
+    for (int i = 0; i < count; i++) {
+      userAccountInDBList.add(UserAccount.fromMap(userAccountInDBMapList[i]));
+    }
+    return userAccountInDBList;
+  }
+
+  Future<void> removeTable() async {
+    await _database.delete(tableUserAccounts);
   }
 }

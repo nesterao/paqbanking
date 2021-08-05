@@ -6,6 +6,7 @@ export 'base_input_field.dart';
 export 'base_list_view.dart';
 export 'base_pin_input.dart';
 export 'dialog_helper.dart';
+export 'drop_down_field.dart';
 export 'footer.dart';
 export 'loading_dialog.dart';
 export 'notifications_sheet.dart';

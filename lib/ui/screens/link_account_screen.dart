@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../../data/controller/controller.dart';
-import '../../shared/shared.dart';
-import '../widgets/widgets.dart';
+import '../../shared/exported_shared.dart';
+import '../widgets/exported_widgets.dart';
 
 class LinkAccountScreen extends StatefulWidget {
   const LinkAccountScreen({Key key}) : super(key: key);
@@ -18,7 +17,7 @@ class LinkAccountScreen extends StatefulWidget {
 
 class _LinkAccountScreenState extends State<LinkAccountScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final AccountController _accountController = AccountController();
+  // final AccountController _accountController = AccountController();
 
   final TextEditingController _phoneNumberTextFieldController =
       TextEditingController();
@@ -162,11 +161,11 @@ Please enter a valid 10-digit mobile number''';
                           child: PrimaryButton(
                             onTap: () async {
                               if (_formKey.currentState.validate()) {
-                                await _accountController.checkLinkAccount(
-                                    phoneNumber:
-                                        _phoneNumberTextFieldController.text,
-                                    accountNumber:
-                                        _accountNumberTextFieldController.text);
+                                // await _accountController.checkLinkAccount(
+                                //     phoneNumber:
+                                //         _phoneNumberTextFieldController.text,
+                                //     accountNumber:
+                                //         _accountNumberTextFieldController.text);
                               }
                             },
                             text: 'Next',

@@ -4,8 +4,8 @@ import 'package:floating_bottom_navigation_bar/floating_bottom_navigation_bar.da
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
-import '../screens/screens.dart';
+import '../../shared/exported_shared.dart';
+import '../screens/exported_screens.dart';
 
 class BaseBottomNavBar extends StatelessWidget {
   const BaseBottomNavBar(this._index, this.onTap);

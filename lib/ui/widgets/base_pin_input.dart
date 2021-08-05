@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class BasePinInput extends StatefulWidget {
   const BasePinInput({
@@ -33,6 +33,11 @@ class _BasePinInputState extends State<BasePinInput> {
   @override
   Widget build(BuildContext context) {
     return PinCodeTextField(
+      // dialogConfig: DialogConfig(
+      //   dialogTitle: Constants.appName,
+      //   affirmativeText: Constants.successTitle,
+      //   negativeText: Constants.errorTitle,
+      // ),
       appContext: context,
       length: widget.length,
       autoFocus: widget.autoFocus,

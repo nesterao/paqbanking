@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class SecondaryButton extends StatelessWidget {
   const SecondaryButton({

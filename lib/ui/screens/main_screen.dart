@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
-import '../widgets/widgets.dart';
-import 'screens.dart';
+import '../../shared/exported_shared.dart';
+import '../widgets/exported_widgets.dart';
+import 'exported_screens.dart';
 
 class MainScreen extends StatefulWidget {
   static const String routeName = '/main_screen';

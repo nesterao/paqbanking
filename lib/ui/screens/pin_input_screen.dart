@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pa_quick_banking/data/model/account_model.dart';
+import 'package:pa_quick_banking/data/controller/account_controller.dart';
+import 'package:pa_quick_banking/data/model/account_dto.dart';
 
-import '../../data/controller/controller.dart';
-import '../../shared/shared.dart';
-import '../widgets/widgets.dart';
+import '../../shared/exported_shared.dart';
+import '../widgets/exported_widgets.dart';
 
 class PinInput extends StatefulWidget {
   static const String routeName = '/pin_input';
@@ -18,7 +18,8 @@ class _PinInputState extends State<PinInput> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _pinPutController = TextEditingController();
-  final AccountController _accountController = AccountController();
+  final AccountController _accountController = Get.find();
+  AccountDto _accountDto;
 
   FocusNode _pinPutFocusNode;
 
@@ -33,18 +34,18 @@ class _PinInputState extends State<PinInput> {
   void dispose() {
     // TODO: implement dispose
     _pinPutFocusNode = FocusNode();
+    _pinPutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final AccountData _accountData =
-        ModalRoute.of(context).settings.arguments as AccountData;
+    _accountDto = _accountController.accountDto;
 
     Future<dynamic> submit() async {
       if (_formKey.currentState.validate()) {
-        _accountData.accountDetails.pin = _pinPutController.text;
-        _accountController.validatePIN(accountData: _accountData);
+        // _accountData.accountDetails.pin = _pinPutController.text;
+        // _accountController.validatePIN(accountData: _accountData);
         setState(() {
           _pinPutController.text = '';
         });
@@ -72,7 +73,7 @@ class _PinInputState extends State<PinInput> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Text(
-                        'Welcome ${_accountData.accountDetails.name ?? 'User'}  \n',
+                        'Welcome User',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headline1.copyWith(
                               fontSize: displayWidth(context) * 0.05,
@@ -87,9 +88,7 @@ class _PinInputState extends State<PinInput> {
                       ),
                       sizedBoxHeight(context, 0.01),
                       Text(
-                        '(${FormatUtils.formatPhoneNumber(
-                          _accountData.accountDetails.phoneNumber,
-                        )})',
+                        '(${_accountDto.phoneNumber})',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headline6.copyWith(
                               letterSpacing: 4,

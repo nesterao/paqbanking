@@ -1,6 +1,6 @@
 import 'package:get/get_navigation/get_navigation.dart';
 
-import '../ui/screens/screens.dart';
+import '../ui/screens/exported_screens.dart';
 
 List<GetPage<dynamic>> routes = <GetPage<dynamic>>[
   // ignore: always_specify_types
@@ -46,7 +46,7 @@ List<GetPage<dynamic>> routes = <GetPage<dynamic>>[
   // ignore: always_specify_types
   GetPage(
     name: CreateAccountScreen.routeName,
-    page: () => const CreateAccountScreen(),
+    page: () => CreateAccountScreen(),
     transition: Transition.topLevel,
     // transitionDuration: const Duration(seconds: 1),
   ),

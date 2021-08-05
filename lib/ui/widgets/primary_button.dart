@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({Key key, this.text, this.onTap}) : super(key: key);

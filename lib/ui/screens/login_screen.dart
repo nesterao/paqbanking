@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../data/controller/controller.dart';
-import '../../data/helpers/helpers.dart';
-import '../../data/model/model.dart';
-import '../../shared/shared.dart';
-import '../screens/screens.dart';
-import '../widgets/widgets.dart';
+import '../../shared/exported_shared.dart';
+import '../screens/exported_screens.dart';
+import '../widgets/exported_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String routeName = '/login_screen';
@@ -16,11 +13,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final DatabaseHelper _databaseHelper = DatabaseHelper();
-  final AccountController _accountController = AccountController();
-
   static int _swiperIndex = 0;
-  AccountInDB _accountInDB = AccountInDB();
 
   @override
   void initState() {
@@ -29,42 +22,42 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
-  Widget _buildSwiperList(AccountInDB accountInDB, int index) {
-    return Card(
-      color: Get.isDarkMode ? kDarkPrimaryColor : kContentColorDarkTheme,
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(
-          color: kAccentColor,
-        ),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Center(
-        child: ListTile(
-          horizontalTitleGap: 14,
-          leading: Icon(
-            Icons.phone_android_outlined,
-            size: displayWidth(context) * 0.12,
-            color: Get.isDarkMode ? kDarkSecondaryColor : kLightTertiaryColor,
-          ),
-          title: Text(
-            FormatUtils.formatPhoneNumber(accountInDB.phoneNumber),
-            style: Theme.of(context).textTheme.headline6.copyWith(
-                  letterSpacing: 4,
-                  fontSize: displayWidth(context) * 0.06,
-                ),
-          ),
-          subtitle: Text(
-            '(${FormatUtils.formatAccountNumber(accountInDB.accountNumber)})',
-            style: Theme.of(context).textTheme.headline1.copyWith(
-                  letterSpacing: 2,
-                  fontSize: displayWidth(context) * 0.05,
-                ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildSwiperList(AccountInDB accountInDB, int index) {
+  //   return Card(
+  //     color: Get.isDarkMode ? kDarkPrimaryColor : kContentColorDarkTheme,
+  //     elevation: 4,
+  //     shape: RoundedRectangleBorder(
+  //       side: const BorderSide(
+  //         color: kAccentColor,
+  //       ),
+  //       borderRadius: BorderRadius.circular(6),
+  //     ),
+  //     child: Center(
+  //       child: ListTile(
+  //         horizontalTitleGap: 14,
+  //         leading: Icon(
+  //           Icons.phone_android_outlined,
+  //           size: displayWidth(context) * 0.12,
+  //           color: Get.isDarkMode ? kDarkSecondaryColor : kLightTertiaryColor,
+  //         ),
+  //         title: Text(
+  //           FormatUtils.formatPhoneNumber(accountInDB.phoneNumber),
+  //           style: Theme.of(context).textTheme.headline6.copyWith(
+  //                 letterSpacing: 4,
+  //                 fontSize: displayWidth(context) * 0.06,
+  //               ),
+  //         ),
+  //         subtitle: Text(
+  //           '(${FormatUtils.formatAccountNumber(accountInDB.accountNumber)})',
+  //           style: Theme.of(context).textTheme.headline1.copyWith(
+  //                 letterSpacing: 2,
+  //                 fontSize: displayWidth(context) * 0.05,
+  //               ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     onTap: () {
                       Get.toNamed(
                         PinInput.routeName,
-                        arguments: _accountInDB,
                       );
                     },
                   ),
@@ -134,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 sizedBoxHeight(context, 0.06),
                 TextButton(
                   onPressed: () {
-                    Get.toNamed(WelcomeScreen.routeName);
+                    // Get.toNamed(WelcomeScreen.routeName);
                   },
                   child: Text(
                     'Setup New User Account'.toUpperCase(),

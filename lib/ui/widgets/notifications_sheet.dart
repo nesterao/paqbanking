@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
-import 'widgets.dart';
+import '../../shared/exported_shared.dart';
+import 'exported_widgets.dart';
 
 void openNotifications({BuildContext context}) {
   showModalBottomSheet(

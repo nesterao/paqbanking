@@ -1,44 +1,48 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pa_quick_banking/ui/widgets/primary_button.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class DialogHelper {
-  static void showErrorDialog({
-    String title = 'An Error Occurred',
-    String description = 'Something went wrong.',
-  }) {
+  static void showErrorDialog({String title, String description}) {
     Get.dialog(
       Dialog(
+        backgroundColor:
+            Get.isDarkMode ? kContentColorLightTheme : kContentColorDarkTheme,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: FittedBox(
-            fit: BoxFit.fitHeight,
-            child: Column(
-              children: <Widget>[
-                Text(
-                  title ?? '',
-                  style: const TextStyle(
-                      color: Colors.blue,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                title ?? 'An Error Occurred',
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  color: kErrorColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
-                Text(
-                  description ?? '',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontSize: 18,
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description ?? 'Something went wrong. Please try again later.',
+                style: TextStyle(
+                  color:
+                      Get.isDarkMode ? kDarkTertiaryColor : kLightPrimaryColor,
+                  fontSize: 18,
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (Get.isDialogOpen) Get.back();
-                  },
-                  child: const Text('Okay'),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(
+                onTap: () {
+                  if (Get.isDialogOpen) Get.back();
+                },
+                text: 'Okay',
+              ),
+            ],
           ),
         ),
       ),
@@ -49,27 +53,29 @@ class DialogHelper {
   static void showLoading([String message]) {
     Get.dialog(
       Dialog(
+        backgroundColor:
+            Get.isDarkMode ? kDarkPrimaryColor : kContentColorDarkTheme,
+        // insetPadding: ,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: SizedBox(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const <Widget>[
-                CircularProgressIndicator(
-                  strokeWidth: 3.0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              CircularProgressIndicator(
+                strokeWidth: 3.0,
+                color: Get.isDarkMode ? kAccentColor : kLightPrimaryColor,
+              ),
+              const SizedBox(
+                height: 24,
+              ),
+              const Text(
+                'Loading...',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 24,
                 ),
-                SizedBox(
-                  height: 24,
-                ),
-                Text(
-                  'Loading...',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 24,
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         ),
       ),

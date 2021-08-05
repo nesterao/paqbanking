@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
+import '../../shared/exported_shared.dart';
 
 class BaseInputField extends StatefulWidget {
   const BaseInputField({
@@ -21,6 +21,7 @@ class BaseInputField extends StatefulWidget {
     this.inputLetterSpacing,
     this.inputOnFieldSubmitted,
     this.onEditingComplete,
+    this.onTap,
     this.inputValidator,
     this.textInputAction,
     this.inputFormatter,
@@ -41,6 +42,7 @@ class BaseInputField extends StatefulWidget {
   final FocusNode inputFocusNode;
   final Function(String e) inputOnFieldSubmitted;
   final VoidCallback onEditingComplete;
+  final VoidCallback onTap;
   final List<TextInputFormatter> inputFormatter;
   final String Function(String e) inputValidator;
   final TextInputAction textInputAction;
@@ -100,6 +102,7 @@ class _BaseInputFieldState extends State<BaseInputField> {
           onEditingComplete: widget.onEditingComplete,
           onFieldSubmitted: widget.inputOnFieldSubmitted,
           inputFormatters: widget.inputFormatter,
+          onTap: widget.onTap,
           style: TextStyle(
             fontSize: displayWidth(context) * 0.05,
             letterSpacing: widget.inputLetterSpacing,
@@ -109,11 +112,13 @@ class _BaseInputFieldState extends State<BaseInputField> {
             labelText: widget.inputLabel,
             errorText: widget.inputErrorText,
             hintText: widget.inputHintText ?? '',
+            alignLabelWithHint: true,
             hintStyle: Theme.of(context).textTheme.headline6.copyWith(
                   fontSize: displayWidth(context) * 0.044,
                   color: Colors.grey,
+                  letterSpacing: displayWidth(context) * 0.01,
                 ),
-            contentPadding: const EdgeInsets.all(10.0),
+            // contentPadding: const EdgeInsets.all(16.0),
             filled: true,
             fillColor:
                 Get.isDarkMode ? kDarkPrimaryColor : kContentColorDarkTheme,
@@ -129,7 +134,7 @@ class _BaseInputFieldState extends State<BaseInputField> {
           ),
         ),
         if (widget.labelText != null && widget.labelText.isNotEmpty)
-          sizedBoxHeight(context, 0.04)
+          sizedBoxHeight(context, 0.001)
         else
           const SizedBox(),
       ],

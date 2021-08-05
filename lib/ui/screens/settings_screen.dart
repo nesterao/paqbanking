@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/shared.dart';
-import '../widgets/widgets.dart';
+import '../../shared/exported_shared.dart';
+import '../widgets/exported_widgets.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const String title = '/settings_screen';

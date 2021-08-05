@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../shared/shared.dart';
-import '../screens/screens.dart';
-import '../widgets/widgets.dart';
+import '../../shared/exported_shared.dart';
+import '../screens/exported_screens.dart';
+import '../widgets/exported_widgets.dart';
 
 class WelcomeScreen extends StatefulWidget {
   static const String routeName = '/welcome_screen';

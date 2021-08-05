@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:pa_quick_banking/ui/widgets/base_body.dart';
+import 'package:pa_quick_banking/data/controller/account_controller.dart';
 
-import './constants/constants.dart';
-import './data/controller/controller.dart';
-import './data/helpers/helpers.dart';
-import './data/model/model.dart';
-import './shared/shared.dart';
-import './ui/screens/screens.dart';
+import './data/helpers/db_helper.dart';
+import './shared/exported_shared.dart';
+import './ui/screens/exported_screens.dart';
+import './ui/widgets/exported_widgets.dart';
 
 // void main() => runApp(MyApp());
 Future<void> main() async {
@@ -37,15 +35,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> checkLinkedAccounts() async {
-    final bool linkedAccounts = await databaseHelper.tableIsNotEmpty();
-    linkedAccounts
+    final bool _linkedUserAccounts = await databaseHelper.tableIsNotEmpty();
+    _linkedUserAccounts
         ? Get.offAllNamed(LoginScreen.routeName)
         : Get.offAllNamed(WelcomeScreen.routeName);
   }
 
   @override
   Widget build(BuildContext context) {
-    // FocusScope.of(context).requestFocus(FocusNode());
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     SystemChrome.setPreferredOrientations(
       <DeviceOrientation>[DeviceOrientation.portraitUp],
@@ -57,9 +54,6 @@ class _MyAppState extends State<MyApp> {
       initialRoute: '/',
       initialBinding: BindingsBuilder<dynamic>(
         () {
-          Get.put(AccountInDB());
-          Get.put(DatabaseHelper());
-          Get.put(LoginController());
           Get.put(AccountController());
         },
       ),
@@ -67,8 +61,15 @@ class _MyAppState extends State<MyApp> {
       home: BaseBody(
         content: SafeArea(
           child: Center(
-            child: CircularProgressIndicator(
-              color: Get.isDarkMode ? kAccentColor : kLightPrimaryColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                WelcomeLogo(),
+                const SizedBox(height: 64),
+                CircularProgressIndicator(
+                  color: Get.isDarkMode ? kAccentColor : kLightPrimaryColor,
+                ),
+              ],
             ),
           ),
         ),

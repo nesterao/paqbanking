@@ -5,10 +5,10 @@
 //
 // // import 'package:sms_autofill/sms_autofill.dart';
 //
-// import '../../data/controller/controller.dart';
-// import '../../data/model/model.dart';
-// import '../../shared/shared.dart';
-// import '../widgets/widgets.dart';
+// import '../../data/controller/exported_controllers.dart';
+// import '../../data/model/exported_models.dart';
+// import '../../shared/exported_shared.dart';
+// import '../widgets/exported_widgets.dart';
 //
 // class StepperBody extends StatefulWidget {
 //   const StepperBody({Key key}) : super(key: key);
