@@ -104,7 +104,6 @@ class AccountController extends GetxController {
   }
 
   Future<void> fetchFormContent() async {
-    _startLoading();
     Map<String, dynamic> _resultsQuestions;
     Map<String, dynamic> _resultsIdTypes;
     Map<String, dynamic> _resultsTitles;

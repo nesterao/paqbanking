@@ -29,7 +29,7 @@ class _OTPVerificationState extends State<OTPVerification> {
   @override
   void initState() {
     // TODO: implement initState
-    listenForCode();
+    // listenForCode();
     _otpVerificationFocusNode = FocusNode();
     super.initState();
   }
@@ -37,14 +37,14 @@ class _OTPVerificationState extends State<OTPVerification> {
   @override
   void dispose() {
     // TODO: implement dispose
-    SmsAutoFill().unregisterListener();
+    // SmsAutoFill().unregisterListener();
     _otpVerificationFocusNode = FocusNode();
     super.dispose();
   }
 
-  void listenForCode() async {
-    await SmsAutoFill().listenForCode;
-  }
+  // void listenForCode() async {
+  //   await SmsAutoFill().listenForCode;
+  // }
 
   @override
   Widget build(BuildContext context) {

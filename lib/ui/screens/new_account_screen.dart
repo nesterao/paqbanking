@@ -41,16 +41,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       TextEditingController();
   final TextEditingController assistedByAgentCodeTextEditingController =
       TextEditingController();
-  final TextEditingController motherMaidenNameTextEditingController =
-      TextEditingController();
-  final TextEditingController question1TextEditingController =
-      TextEditingController();
-  final TextEditingController answer1TextEditingController =
-      TextEditingController();
-  final TextEditingController question2TextEditingController =
-      TextEditingController();
-  final TextEditingController answer2TextEditingController =
-      TextEditingController();
 
   final AccountController _accountController = Get.find();
   DateTime selectedDate = DateTime.now();
@@ -65,11 +55,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   FocusNode title;
   FocusNode email;
   FocusNode assistedByAgentCode;
-  FocusNode motherMaidenName;
-  FocusNode question1;
-  FocusNode answer1;
-  FocusNode question2;
-  FocusNode answer2;
+  FocusNode switchFocusNode;
 
   @override
   void initState() {
@@ -85,11 +71,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     title = FocusNode();
     email = FocusNode();
     assistedByAgentCode = FocusNode();
-    motherMaidenName = FocusNode();
-    question1 = FocusNode();
-    answer1 = FocusNode();
-    question2 = FocusNode();
-    answer2 = FocusNode();
+    switchFocusNode = FocusNode();
+
     super.initState();
   }
 
@@ -106,12 +89,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     title = FocusNode();
     email = FocusNode();
     assistedByAgentCode = FocusNode();
-    motherMaidenName = FocusNode();
-    question1 = FocusNode();
-    answer1 = FocusNode();
-    question2 = FocusNode();
-    answer2 = FocusNode();
-    phoneNumberTextFieldController.dispose();
+    switchFocusNode = FocusNode();
     super.dispose();
   }
 
@@ -123,15 +101,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     currentFocus.unfocus();
     FocusScope.of(context).requestFocus(nextFocus);
   }
-
-  // Future<void> getData() async {
-  //   // if (_accountController.source == 1) {
-  //   await _accountController.fetchFormContent();
-  //   _items = _accountController.formContent.idTypes
-  //       .map((IdType e) => e.name)
-  //       .toList();
-  //   // }
-  // }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -150,23 +119,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     }
   }
 
-  // @override
-  // void initState() {
-  //   // TODO: implement initState
-  //   super.initState();
-  // }
-  //
-  // @override
-  // void dispose() {
-  //   // TODO: implement dispose
-  //   phoneNumberFocusNode = FocusNode();
-  //   _phoneNumberTextFieldController.dispose();
-  //   super.dispose();
-  // }
   List<String> _idTypes;
   List<String> _titles;
   List<String> _question1List;
-  List<String> _question2List = [];
+  List<String> _question2List = <String>[];
+  bool switchValue = false;
 
   @override
   Widget build(BuildContext context) {
@@ -178,12 +135,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       _question1List = _accountController.formContent.questions
           .map((Question e) => e.text)
           .toList();
-      // _question2List = _accountController.formContent.questions
-      //     .map((Question e) => e.text)
-      //     .toList();
     }
-
-    // getData();
 
     return BaseBody(
       appBar: baseAppBar(
@@ -353,90 +305,59 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           },
                         ),
                         sizedBoxHeight(context, 0.02),
-                        AppDropdownField(
-                          inputFocusNode: question1,
-                          labelText: 'Security Question 1',
-                          inputController: question1TextEditingController,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
-                          items: _question1List,
-                          textInputAction: TextInputAction.next,
-                          inputOnFieldSubmitted: (String term) {
-                            _fieldFocusChange(
-                              context,
-                              question1,
-                              answer1,
-                            );
-                          },
-                          onChanged: (String newValue) {
-                            setState(() {
-                              // _questions.remove(newValue);
-                              _accountController.questions.removeWhere(
-                                  (Question element) =>
-                                      element.text == newValue);
-                              _question2List = <String>[..._question1List];
-                              _question2List.remove(newValue);
-                              _fieldFocusChange(
-                                context,
-                                question1,
-                                answer1,
-                              );
-                            });
-                          },
-                        ),
                         BaseInputField(
-                          inputFocusNode: answer1,
-                          labelText: 'Answer 1',
-                          inputController: answer1TextEditingController,
-                          inputType: TextInputType.text,
+                          inputFocusNode: email,
+                          labelText: 'Email Address',
+                          inputController: emailTextEditingController,
+                          inputType: TextInputType.emailAddress,
                           inputLetterSpacing: displayWidth(context) * 0.01,
                           textInputAction: TextInputAction.next,
                           inputOnFieldSubmitted: (String term) {
                             _fieldFocusChange(
                               context,
-                              answer1,
-                              question2,
+                              email,
+                              switchFocusNode,
                             );
                           },
                         ),
                         sizedBoxHeight(context, 0.02),
-                        AppDropdownField(
-                          inputFocusNode: question2,
-                          labelText: 'Security Question 2',
-                          inputController: question2TextEditingController,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
-                          items: _question2List,
-                          textInputAction: TextInputAction.next,
-                          inputOnFieldSubmitted: (String term) {
-                            _fieldFocusChange(
-                              context,
-                              question2,
-                              answer2,
-                            );
-                          },
-                          onChanged: (String newValue) {
-                            setState(() {
-                              _fieldFocusChange(
-                                context,
-                                question2,
-                                answer2,
-                              );
-                            });
-                          },
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Flexible(
+                              flex: 4,
+                              child: Text(
+                                'Are you being assisted by an Agent?',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline1
+                                    .copyWith(
+                                      fontSize: displayWidth(context) * 0.05,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ),
+                            Flexible(child: buildSwitch()),
+                          ],
                         ),
-                        BaseInputField(
-                          inputFocusNode: answer2,
-                          labelText: 'Answer 2',
-                          inputController: answer2TextEditingController,
-                          inputType: TextInputType.text,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
-                          textInputAction: TextInputAction.next,
-                          inputOnFieldSubmitted: (String term) {
-                            _fieldFocusChange(
-                              context,
-                              answer2,
-                              question2,
-                            );
-                          },
+                        Visibility(
+                          visible: switchValue,
+                          child: Column(
+                            children: <Widget>[
+                              sizedBoxHeight(context, 0.02),
+                              BaseInputField(
+                                inputFocusNode: assistedByAgentCode,
+                                inputHintText: 'Agent Code',
+                                inputController:
+                                    assistedByAgentCodeTextEditingController,
+                                inputType: TextInputType.number,
+                                textInputAction: TextInputAction.next,
+                                inputOnFieldSubmitted: (String term) {
+                                  assistedByAgentCode.unfocus();
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                         sizedBoxHeight(context, 0.02),
                       ],
@@ -492,6 +413,9 @@ Please enter a valid 10-digit mobile number''';
                         onTap: () async {
                           if (_formKey.currentState.validate()) {
                             if (_accountController.source == 1) {
+                              debugPrintSynchronously(
+                                  _accountController.questions.toString());
+                              Get.toNamed(SecurityScreen.routeName);
                             } else {
                               await _accountController.verifyPhoneNumber(
                                   phoneNumberTextFieldController.text);
@@ -510,4 +434,17 @@ Please enter a valid 10-digit mobile number''';
       ),
     );
   }
+
+  Widget buildSwitch() => Transform.scale(
+        scale: 1.4,
+        child: Switch.adaptive(
+          focusNode: switchFocusNode,
+          activeColor: kAccentColor,
+          activeTrackColor: kLightPrimaryColor,
+          value: switchValue,
+          onChanged: (bool switchValue) => setState(
+            () => this.switchValue = switchValue,
+          ),
+        ),
+      );
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pa_quick_banking/data/controller/account_controller.dart';
+import 'package:get/get.dart';
 
+import '../../data/controller/exported_controllers.dart';
+import '../../data/model/exported_models.dart';
 import '../../shared/exported_shared.dart';
+import '../screens/exported_screens.dart';
 import '../widgets/exported_widgets.dart';
 
 class SecurityScreen extends StatefulWidget {
@@ -15,24 +18,6 @@ class SecurityScreen extends StatefulWidget {
 class _SecurityScreenState extends State<SecurityScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController accountTypeTextEditingController =
-      TextEditingController();
-  final TextEditingController firstNameTextEditingController =
-      TextEditingController();
-  final TextEditingController surnameTextEditingController =
-      TextEditingController();
-  final TextEditingController dateOfBirthTextEditingController =
-      TextEditingController();
-  final TextEditingController idTypeTextEditingController =
-      TextEditingController();
-  final TextEditingController idNumberTextEditingController =
-      TextEditingController();
-  final TextEditingController titleTextEditingController =
-      TextEditingController();
-  final TextEditingController emailTextEditingController =
-      TextEditingController();
-  final TextEditingController assistedByAgentCodeTextEditingController =
-      TextEditingController();
   final TextEditingController motherMaidenNameTextEditingController =
       TextEditingController();
   final TextEditingController question1TextEditingController =
@@ -44,35 +29,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
   final TextEditingController answer2TextEditingController =
       TextEditingController();
 
-  FocusNode accountType;
-  FocusNode firstName;
-  FocusNode surname;
-  FocusNode dateOfBirth;
-  FocusNode idType;
-  FocusNode idNumber;
-  FocusNode title;
-  FocusNode email;
-  FocusNode assistedByAgentCode;
   FocusNode motherMaidenName;
   FocusNode question1;
   FocusNode answer1;
   FocusNode question2;
   FocusNode answer2;
 
-  final AccountController _accountController = AccountController();
+  final AccountController _accountController = Get.find();
+  List<String> _question1List;
+  List<String> _question2List = <String>[];
 
   @override
   void initState() {
     // TODO: implement initState
-    accountType = FocusNode();
-    firstName = FocusNode();
-    surname = FocusNode();
-    dateOfBirth = FocusNode();
-    idType = FocusNode();
-    idNumber = FocusNode();
-    title = FocusNode();
-    email = FocusNode();
-    assistedByAgentCode = FocusNode();
+
     motherMaidenName = FocusNode();
     question1 = FocusNode();
     answer1 = FocusNode();
@@ -84,15 +54,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   void dispose() {
     // TODO: implement dispose
-    accountType = FocusNode();
-    firstName = FocusNode();
-    surname = FocusNode();
-    dateOfBirth = FocusNode();
-    idType = FocusNode();
-    idNumber = FocusNode();
-    title = FocusNode();
-    email = FocusNode();
-    assistedByAgentCode = FocusNode();
+
     motherMaidenName = FocusNode();
     question1 = FocusNode();
     answer1 = FocusNode();
@@ -110,19 +72,19 @@ class _SecurityScreenState extends State<SecurityScreen> {
     FocusScope.of(context).requestFocus(nextFocus);
   }
 
-  void getter() {
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
-    final int _source = _accountController.source;
-
-    debugPrintSynchronously(_accountController.source.toString());
     Future<dynamic> submit() async {
       if (_formKey.currentState.validate()) {
         setState(() {});
       }
+    }
+
+    if (_accountController.source == 1) {
+      _question1List = _accountController.formContent.questions
+          .map((Question e) => e.text)
+          .toList();
+      debugPrintSynchronously(_question1List.toString());
     }
 
     return BaseBody(
@@ -134,325 +96,159 @@ class _SecurityScreenState extends State<SecurityScreen> {
       content: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(displayWidth(context) * 0.04),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: <Widget>[
-                  BaseInputField(
-                    autoFocus: true,
-                    inputFocusNode: accountType,
-                    labelText: 'Account Type',
-                    inputMaxLength: 10,
-                    inputController: accountTypeTextEditingController,
-                    inputType: TextInputType.text,
-                    inputLetterSpacing: displayWidth(context) * 0.01,
-                    textInputAction: TextInputAction.next,
-                    // inputFormatter: <TextInputFormatter>[
-                    //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                    // ],
-                    inputOnFieldSubmitted: (String term) {
-                      _fieldFocusChange(
-                        context,
-                        accountType,
-                        firstName,
-                      );
-                    },
-                  ),
-                  BaseInputField(
-                    inputFocusNode: firstName,
-                    labelText: 'First Name',
-                    inputController: firstNameTextEditingController,
-                    inputType: TextInputType.text,
-                    inputLetterSpacing: displayWidth(context) * 0.01,
-                    textInputAction: TextInputAction.next,
-                    // inputFormatter: <TextInputFormatter>[
-                    //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                    // ],
-                    inputOnFieldSubmitted: (String term) {
-                      _fieldFocusChange(
-                        context,
-                        firstName,
-                        surname,
-                      );
-                    },
-                  ),
-                  sizedBoxHeight(context, 0.02),
-                  BaseInputField(
-                    inputFocusNode: surname,
-                    labelText: 'Surname',
-                    inputController: surnameTextEditingController,
-                    inputType: TextInputType.text,
-                    inputLetterSpacing: displayWidth(context) * 0.01,
-                    textInputAction: TextInputAction.next,
-                    // inputFormatter: <TextInputFormatter>[
-                    //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                    // ],
-                    inputOnFieldSubmitted: (String term) {
-                      _fieldFocusChange(
-                        context,
-                        surname,
-                        firstName,
-                      );
-                    },
-                  ),
-                  sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  // sizedBoxHeight(context, 0.02),
-                  // BaseInputField(
-                  //   autoFocus: true,
-                  //   inputFocusNode: accountType,
-                  //   inputLabel: 'Account Type',
-                  //   inputMaxLength: 10,
-                  //   inputController: accountTypeTextEditingController,
-                  //   inputType: TextInputType.text,
-                  //   inputLetterSpacing: displayWidth(context) * 0.01,
-                  //   textInputAction: TextInputAction.next,
-                  //   // inputFormatter: <TextInputFormatter>[
-                  //   //   FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
-                  //   // ],
-                  //   inputOnFieldSubmitted: (String term) {
-                  //     _fieldFocusChange(
-                  //       context,
-                  //       accountType,
-                  //       firstName,
-                  //     );
-                  //   },
-                  // ),
-                  sizedBoxHeight(context, 0.02),
-                  Row(
+            padding: EdgeInsets.all(displayWidth(context) * 0.06),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  _accountController.source == 1
+                      ? 'Please fill the form to create a new account.'
+                      : 'Please update your security information.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headline1.copyWith(
+                        fontSize: displayWidth(context) * 0.035,
+                      ),
+                ),
+                sizedBoxHeight(context, 0.04),
+                Form(
+                  key: _formKey,
+                  child: Column(
                     children: <Widget>[
-                      Expanded(
-                        child: PrimaryButton(
-                          onTap: () {
-                            // Get.toNamed(LoginScreen.routeName);
-                            // Navigator.of(context).pushNamed();
-                          },
-                          text: 'Next',
-                        ),
+                      BaseInputField(
+                        inputFocusNode: motherMaidenName,
+                        labelText: 'Mother Maiden Name',
+                        inputController: motherMaidenNameTextEditingController,
+                        inputType: TextInputType.emailAddress,
+                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        textInputAction: TextInputAction.next,
+                        inputOnFieldSubmitted: (String term) {
+                          _fieldFocusChange(
+                            context,
+                            answer2,
+                            question2,
+                          );
+                        },
                       ),
-                      sizedBoxWidth(context, 0.04),
-                      // SizedBox(width: 8,),
-                      Expanded(
-                        child: SecondaryButton(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
-                          text: 'Cancel',
-                        ),
+                      sizedBoxHeight(context, 0.02),
+                      AppDropdownField(
+                        inputFocusNode: question1,
+                        labelText: 'Security Question 1',
+                        inputController: question1TextEditingController,
+                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        items: _question1List,
+                        textInputAction: TextInputAction.next,
+                        inputOnFieldSubmitted: (String term) {
+                          _fieldFocusChange(
+                            context,
+                            question1,
+                            answer1,
+                          );
+                        },
+                        onChanged: (String newValue) {
+                          setState(() {
+                            // _questions.remove(newValue);
+                            _accountController.questions.removeWhere(
+                                (Question element) => element.text == newValue);
+                            _question2List = <String>[..._question1List];
+                            _question2List.remove(newValue);
+                            _fieldFocusChange(
+                              context,
+                              question1,
+                              answer1,
+                            );
+                          });
+                        },
                       ),
+                      BaseInputField(
+                        inputFocusNode: answer1,
+                        labelText: 'Answer 1',
+                        inputController: answer1TextEditingController,
+                        inputType: TextInputType.text,
+                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        textInputAction: TextInputAction.next,
+                        inputOnFieldSubmitted: (String term) {
+                          _fieldFocusChange(
+                            context,
+                            answer1,
+                            question2,
+                          );
+                        },
+                      ),
+                      sizedBoxHeight(context, 0.02),
+                      AppDropdownField(
+                        inputFocusNode: question2,
+                        labelText: 'Security Question 2',
+                        inputController: question2TextEditingController,
+                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        items: _question2List,
+                        textInputAction: TextInputAction.next,
+                        inputOnFieldSubmitted: (String term) {
+                          _fieldFocusChange(
+                            context,
+                            question2,
+                            answer2,
+                          );
+                        },
+                        onChanged: (String newValue) {
+                          setState(() {
+                            _fieldFocusChange(
+                              context,
+                              question2,
+                              answer2,
+                            );
+                          });
+                        },
+                      ),
+                      BaseInputField(
+                        inputFocusNode: answer2,
+                        labelText: 'Answer 2',
+                        inputController: answer2TextEditingController,
+                        inputType: TextInputType.text,
+                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        textInputAction: TextInputAction.next,
+                        inputOnFieldSubmitted: (String term) {
+                          _fieldFocusChange(
+                            context,
+                            answer2,
+                            question2,
+                          );
+                        },
+                      ),
+                      sizedBoxHeight(context, 0.02),
+                      sizedBoxHeight(context, 0.02),
                     ],
                   ),
-                ],
-              ),
+                ),
+                sizedBoxHeight(context, 0.04),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: SecondaryButton(
+                        onTap: () {
+                          Get.offAllNamed(WelcomeScreen.routeName);
+                        },
+                        text: 'Cancel',
+                      ),
+                    ),
+                    sizedBoxWidth(context, 0.04),
+                    Expanded(
+                      child: PrimaryButton(
+                        onTap: () async {
+                          if (_formKey.currentState.validate()) {
+                            if (_accountController.source == 1) {
+                            } else {
+                              // await _accountController.verifyPhoneNumber(
+                              //     phoneNumberTextFieldController.text);
+                            }
+                          }
+                        },
+                        text: 'Next',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
