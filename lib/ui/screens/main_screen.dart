@@ -39,7 +39,6 @@ class _MainScreenState extends State<MainScreen> {
         _index = index;
         setTitle();
 
-        //using this page controller you can make beautiful animation effects
         _pageController.animateToPage(
           index,
           duration: const Duration(milliseconds: 200),
@@ -83,7 +82,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
           content: Text(
-            'Are you sure you want to exit Quick Bankikg?',
+            'Are you sure you want to exit Quick Banking?',
             style: TextStyle(
               fontSize: displayWidth(context) * 0.04,
               color: Get.isDarkMode ? kDarkTertiaryColor : kDarkPrimaryColor,

@@ -61,6 +61,14 @@ class _BaseInputFieldState extends State<BaseInputField> {
     ));
   }
 
+  InputBorder _focusedBorderDecoration() {
+    return UnderlineInputBorder(
+        borderSide: BorderSide(
+      color: Get.isDarkMode ? kDarkSecondaryColor : kDarkPrimaryColor,
+      width: 2,
+    ));
+  }
+
   InputBorder _errorBorderDecoration() {
     return const UnderlineInputBorder(
         borderSide: BorderSide(
@@ -106,7 +114,7 @@ class _BaseInputFieldState extends State<BaseInputField> {
           style: TextStyle(
             fontSize: displayWidth(context) * 0.05,
             letterSpacing: widget.inputLetterSpacing,
-            color: Get.isDarkMode ? kDarkTertiaryColor : kLightPrimaryColor,
+            color: Get.isDarkMode ? kAccentColor : kDarkPrimaryColor,
           ),
           decoration: InputDecoration(
             labelText: widget.inputLabel,
@@ -128,7 +136,7 @@ class _BaseInputFieldState extends State<BaseInputField> {
               color: Get.isDarkMode ? kDarkTertiaryColor : kLightPrimaryColor,
             ),
             enabledBorder: _borderDecoration(),
-            focusedBorder: _borderDecoration(),
+            focusedBorder: _focusedBorderDecoration(),
             border: _borderDecoration(),
             errorBorder: _errorBorderDecoration(),
           ),

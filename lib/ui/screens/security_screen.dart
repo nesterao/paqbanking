@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pa_quick_banking/ui/screens/exported_screens.dart';
 
 import '../../data/controller/exported_controllers.dart';
 import '../../data/model/exported_models.dart';
 import '../../shared/exported_shared.dart';
-import '../screens/exported_screens.dart';
 import '../widgets/exported_widgets.dart';
 
 class SecurityScreen extends StatefulWidget {
@@ -74,17 +74,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Future<dynamic> submit() async {
-      if (_formKey.currentState.validate()) {
-        setState(() {});
-      }
-    }
-
     if (_accountController.source == 1) {
       _question1List = _accountController.formContent.questions
           .map((Question e) => e.text)
           .toList();
-      debugPrintSynchronously(_question1List.toString());
     }
 
     return BaseBody(
@@ -116,17 +109,27 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   child: Column(
                     children: <Widget>[
                       BaseInputField(
+                        autoFocus: true,
                         inputFocusNode: motherMaidenName,
                         labelText: 'Mother Maiden Name',
                         inputController: motherMaidenNameTextEditingController,
-                        inputType: TextInputType.emailAddress,
-                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        inputType: TextInputType.name,
+                        inputLetterSpacing: displayWidth(context) * 0.004,
                         textInputAction: TextInputAction.next,
+                        inputValidator: (String value) {
+                          const String pattern = r'([A-Za-z]$)';
+                          final RegExp regExp = RegExp(pattern);
+                          if (value.isEmpty) {
+                            return 'Please enter your first name';
+                          }
+                          debugPrint(value);
+                          return null;
+                        },
                         inputOnFieldSubmitted: (String term) {
                           _fieldFocusChange(
                             context,
-                            answer2,
-                            question2,
+                            motherMaidenName,
+                            question1,
                           );
                         },
                       ),
@@ -135,10 +138,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         inputFocusNode: question1,
                         labelText: 'Security Question 1',
                         inputController: question1TextEditingController,
-                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        inputLetterSpacing: displayWidth(context) * 0.004,
                         items: _question1List,
                         textInputAction: TextInputAction.next,
                         inputOnFieldSubmitted: (String term) {
+                          question1TextEditingController.text = term.toString();
                           _fieldFocusChange(
                             context,
                             question1,
@@ -147,7 +151,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         },
                         onChanged: (String newValue) {
                           setState(() {
-                            // _questions.remove(newValue);
+                            question1TextEditingController.text =
+                                newValue.toString();
                             _accountController.questions.removeWhere(
                                 (Question element) => element.text == newValue);
                             _question2List = <String>[..._question1List];
@@ -165,7 +170,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         labelText: 'Answer 1',
                         inputController: answer1TextEditingController,
                         inputType: TextInputType.text,
-                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        inputLetterSpacing: displayWidth(context) * 0.004,
                         textInputAction: TextInputAction.next,
                         inputOnFieldSubmitted: (String term) {
                           _fieldFocusChange(
@@ -180,10 +185,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         inputFocusNode: question2,
                         labelText: 'Security Question 2',
                         inputController: question2TextEditingController,
-                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        inputLetterSpacing: displayWidth(context) * 0.004,
                         items: _question2List,
                         textInputAction: TextInputAction.next,
                         inputOnFieldSubmitted: (String term) {
+                          question2TextEditingController.text = term.toString();
                           _fieldFocusChange(
                             context,
                             question2,
@@ -192,6 +198,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         },
                         onChanged: (String newValue) {
                           setState(() {
+                            question2TextEditingController.text =
+                                newValue.toString();
                             _fieldFocusChange(
                               context,
                               question2,
@@ -205,17 +213,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         labelText: 'Answer 2',
                         inputController: answer2TextEditingController,
                         inputType: TextInputType.text,
-                        inputLetterSpacing: displayWidth(context) * 0.01,
+                        inputLetterSpacing: displayWidth(context) * 0.004,
                         textInputAction: TextInputAction.next,
                         inputOnFieldSubmitted: (String term) {
-                          _fieldFocusChange(
-                            context,
-                            answer2,
-                            question2,
-                          );
+                          answer2.unfocus();
                         },
                       ),
-                      sizedBoxHeight(context, 0.02),
                       sizedBoxHeight(context, 0.02),
                     ],
                   ),
@@ -226,7 +229,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     Expanded(
                       child: SecondaryButton(
                         onTap: () {
-                          Get.offAllNamed(WelcomeScreen.routeName);
+                          Get.back();
                         },
                         text: 'Cancel',
                       ),
@@ -234,17 +237,23 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     sizedBoxWidth(context, 0.04),
                     Expanded(
                       child: PrimaryButton(
-                        onTap: () async {
-                          if (_formKey.currentState.validate()) {
-                            if (_accountController.source == 1) {
-                            } else {
-                              // await _accountController.verifyPhoneNumber(
-                              //     phoneNumberTextFieldController.text);
+                          text: 'Next',
+                          onTap: () async {
+                            if (_formKey.currentState.validate()) {
+                              _accountController.securityDto.motherMaidenName =
+                                  motherMaidenNameTextEditingController.text;
+                              _accountController.securityDto.question1 =
+                                  question1TextEditingController.text;
+                              _accountController.securityDto.answer1 =
+                                  answer1TextEditingController.text;
+                              _accountController.securityDto.question2 =
+                                  question2TextEditingController.text;
+                              _accountController.securityDto.answer2 =
+                                  answer2TextEditingController.text;
+
+                              Get.toNamed(PinInput.routeName);
                             }
-                          }
-                        },
-                        text: 'Next',
-                      ),
+                          }),
                     ),
                   ],
                 ),

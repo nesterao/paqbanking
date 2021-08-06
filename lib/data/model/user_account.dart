@@ -18,8 +18,8 @@ class UserAccount {
     this.surname,
     this.token,
     this.tokenExpiry,
-    this.name,
     this.isQuickAccount,
+    this.transactions,
   });
 
   factory UserAccount.fromJson(String str) =>
@@ -28,9 +28,10 @@ class UserAccount {
   factory UserAccount.fromMap(Map<String, dynamic> json) => UserAccount(
         availableBalance: json['availableBalance'] == null
             ? null
-            : json['availableBalance'] as int,
-        actualBalance:
-            json['actualBalance'] == null ? null : json['actualBalance'] as int,
+            : json['availableBalance'] as double,
+        actualBalance: json['actualBalance'] == null
+            ? null
+            : json['actualBalance'] as double,
         phoneNumber:
             json['phoneNumber'] == null ? null : json['phoneNumber'] as String,
         accountNumber: json['accountNumber'] == null
@@ -46,14 +47,16 @@ class UserAccount {
         tokenExpiry: json['tokenExpiry'] == null
             ? null
             : DateTime.parse(json['tokenExpiry'] as String),
-        name: json['name'] == null ? null : json['name'] as String,
         isQuickAccount: json['isQuickAccount'] == null
             ? null
             : json['isQuickAccount'] as bool,
+        transactions: json['transactions'] == null
+            ? null
+            : json['transactions'] as List<Transaction>,
       );
 
-  int availableBalance;
-  int actualBalance;
+  double availableBalance;
+  double actualBalance;
   String phoneNumber;
   String accountNumber;
   String accountType;
@@ -62,10 +65,22 @@ class UserAccount {
   String surname;
   String token;
   DateTime tokenExpiry;
-  String name;
   bool isQuickAccount;
+  List<Transaction> transactions;
 
   String toJson() => json.encode(toMap());
+
+  // bool _intToBool(int e) {
+  //   if (e == 0) {
+  //     return false;
+  //   } else if (e == 1) {
+  //     return true;
+  //   } else {
+  //     throw Exception('Value must be either 0 or 1');
+  //   }
+  // }
+
+  int _boolToInt(bool e) => e ? 1 : 0;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
         'availableBalance': availableBalance,
@@ -77,8 +92,45 @@ class UserAccount {
         'firstName': firstName,
         'surname': surname,
         'token': token,
-        'tokenExpiry': tokenExpiry?.toIso8601String(),
-        'name': name,
-        'isQuickAccount': isQuickAccount,
+        'tokenExpiry': tokenExpiry.toIso8601String(),
+        'isQuickAccount': _boolToInt(isQuickAccount),
+        // 'transactions': transactions,
+      };
+}
+
+class Transaction {
+  Transaction({
+    this.id,
+    this.createdAt,
+    this.description,
+    this.amount,
+    this.charge,
+  });
+
+  factory Transaction.fromJson(String str) =>
+      Transaction.fromMap(json.decode(str) as Map<String, dynamic>);
+
+  factory Transaction.fromMap(Map<String, dynamic> json) => Transaction(
+        id: json['id'] as int,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        description: json['description'] as String,
+        amount: json['amount'] as num,
+        charge: json['charge'] as num,
+      );
+
+  int id;
+  DateTime createdAt;
+  String description;
+  num amount;
+  num charge;
+
+  String toJson() => json.encode(toMap());
+
+  Map<String, dynamic> toMap() => <String, dynamic>{
+        'id': id,
+        'createdAt': createdAt.toIso8601String(),
+        'description': description,
+        'amount': amount,
+        'charge': charge,
       };
 }

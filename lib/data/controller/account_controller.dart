@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:pa_quick_banking/data/helpers/db_helper.dart';
 import 'package:pa_quick_banking/data/model/form_content.dart';
 
 import '../../ui/screens/exported_screens.dart';
@@ -12,9 +13,13 @@ import '../services/request_manager.dart';
 
 class AccountController extends GetxController {
   bool isLoading = false.obs();
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
   AccountDto accountDto = AccountDto(phoneNumber: '').obs();
+  UserAccount userAccount = UserAccount(phoneNumber: '').obs();
   SecurityDto securityDto = SecurityDto().obs();
   List<Question> questions = <Question>[].obs();
+  List<String> accountType =
+      <String>['Quick Save Account', 'Quick TriSave Account'].obs();
   FormContent formContent = FormContent().obs();
   int source = 0.obs();
   int _retry = 0;
@@ -27,6 +32,112 @@ class AccountController extends GetxController {
   void _startLoading() {
     isLoading = true;
     DialogHelper.showLoading();
+  }
+
+  // Future<void> login(String pin) async {
+  //   _startLoading();
+  //   Map<String, dynamic> _responseData;
+  //   try {
+  //     final Response<dynamic> response = await RequestManager().postRequest(
+  //       APIs.verifyPhoneNumberUrl,
+  //       postQuery: <String, dynamic>{'phoneNumber': phoneNumber},
+  //     );
+  //
+  //     _responseData = jsonDecode(response.bodyString) as Map<String, dynamic>;
+  //     final bool isSuccessful = _responseData['successful'] as bool;
+  //     if (isSuccessful) {
+  //       final Map<String, dynamic> data =
+  //           _responseData['data'] as Map<String, dynamic>;
+  //       accountDto.phoneNumber = phoneNumber;
+  //       accountDto.token = data['token'] as String;
+  //       accountDto.tokenExpiry = DateTime.parse(data['tokenExpiry'] as String);
+  //       accountDto.termsAndConditions = data['termsAndConditions'] as String;
+  //       await fetchFormContent();
+  //       source = 1;
+  //       _endLoading();
+  //       Get.toNamed(OTPVerification.routeName);
+  //     } else {
+  //       _endLoading();
+  //       DialogHelper.showErrorDialog(
+  //           title: Constants.errorTitle,
+  //           description: _responseData['msg'] as String);
+  //     }
+  //   } catch (e) {
+  //     _endLoading();
+  //     DialogHelper.showErrorDialog(
+  //       title: Constants.errorTitle,
+  //     );
+  //   }
+  // }
+
+  Future<void> createNewAccount() async {
+    _startLoading();
+    Map<String, dynamic> _responseData;
+    try {
+      final Response<dynamic> response = await RequestManager().postRequest(
+        APIs.createNewAccountUrl,
+        postData: securityDto.toMap(),
+      );
+
+      _responseData = jsonDecode(response.bodyString) as Map<String, dynamic>;
+      final bool isSuccessful = _responseData['successful'] as bool;
+      if (isSuccessful) {
+        final Map<String, dynamic> data =
+            _responseData['data'] as Map<String, dynamic>;
+
+        userAccount.phoneNumber = accountDto.phoneNumber;
+        userAccount.token = data['token'] as String;
+        userAccount.tokenExpiry = DateTime.parse(data['tokenExpiry'] as String);
+        userAccount.accountNumber = data['accountNumber'] as String;
+        // userAccount.kycLevel = data['kycLevel'] as String ?? '';
+        userAccount.firstName = securityDto.firstName;
+        userAccount.surname = securityDto.surname;
+        userAccount.accountType = securityDto.accountType;
+        userAccount.availableBalance = 0;
+        userAccount.actualBalance = 0;
+        userAccount.isQuickAccount = true;
+        await _databaseHelper.insertAccountInDB(userAccount);
+
+        final Response<dynamic> infoResponse =
+            await RequestManager().getRequest(
+          APIs.accountInfoUrl,
+          getHeader: <String, String>{'opToken': userAccount.token},
+        );
+
+        final Map<String, dynamic> _infoResponseData =
+            jsonDecode(infoResponse.bodyString) as Map<String, dynamic>;
+
+        final Map<String, dynamic> _infoData =
+            _infoResponseData['data'] as Map<String, dynamic>;
+
+        debugPrintSynchronously(_infoData.toString());
+
+        userAccount.phoneNumber = _infoData['phoneNumber'] as String;
+        userAccount.availableBalance = _infoData['availableBalance'] as double;
+        userAccount.actualBalance = _infoData['actualBalance'] as double;
+        userAccount.accountNumber = _infoData['accountNumber'] as String;
+        userAccount.kycLevel = _infoData['kycLevel'] as String;
+        userAccount.transactions = (_infoData['transactions'] as List<dynamic>)
+            .map((dynamic e) => Transaction.fromMap(e as Map<String, dynamic>))
+            .toList();
+
+        await _databaseHelper.updateAccountInDB(userAccount);
+
+        _endLoading();
+        Get.toNamed(MainScreen.routeName);
+      } else {
+        _endLoading();
+        DialogHelper.showErrorDialog(
+            title: Constants.errorTitle,
+            description: _responseData['msg'] as String);
+      }
+    } catch (e) {
+      _endLoading();
+      DialogHelper.showErrorDialog(
+        title: Constants.errorTitle,
+      );
+      debugPrintSynchronously(e.toString());
+    }
   }
 
   Future<void> verifyPhoneNumber(String phoneNumber) async {
@@ -85,7 +196,6 @@ class AccountController extends GetxController {
           accountDto.tokenExpiry =
               DateTime.parse(data['tokenExpiry'] as String);
           source = 1;
-          debugPrintSynchronously(source.toString());
           _endLoading();
           Get.toNamed(CreateAccountScreen.routeName);
         } else {

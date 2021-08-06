@@ -2,12 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:pa_quick_banking/data/controller/account_controller.dart';
-import 'package:pa_quick_banking/data/model/form_content.dart';
-import 'package:pa_quick_banking/ui/screens/exported_screens.dart';
 
+import '../../data/controller/exported_controllers.dart';
+import '../../data/model/exported_models.dart';
 import '../../shared/exported_shared.dart';
 import '../widgets/exported_widgets.dart';
+import 'exported_screens.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({Key key}) : super(key: key);
@@ -109,7 +109,25 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       firstDate: DateTime(1890),
       lastDate: DateTime(DateTime.now().year - 17),
       initialEntryMode: DatePickerEntryMode.input,
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: 'Select your date of birth',
+      errorFormatText: 'Please enter valid date',
+      errorInvalidText: 'Please enter date in valid range',
+      builder: (BuildContext context, Widget child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light().copyWith(
+              background: Get.isDarkMode
+                  ? kContentColorLightTheme
+                  : kContentColorDarkTheme,
+              primary: Get.isDarkMode ? kAccentColor : kLightPrimaryColor,
+            ),
+          ),
+          child: child,
+        );
+      },
     );
+
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
@@ -121,8 +139,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   List<String> _idTypes;
   List<String> _titles;
-  List<String> _question1List;
-  List<String> _question2List = <String>[];
   bool switchValue = false;
 
   @override
@@ -132,9 +148,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           .map((IdType e) => e.name)
           .toList();
       _titles = _accountController.formContent.titles;
-      _question1List = _accountController.formContent.questions
-          .map((Question e) => e.text)
-          .toList();
     }
 
     return BaseBody(
@@ -170,36 +183,58 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         fontSize: displayWidth(context) * 0.035,
                       ),
                 ),
+                if (_accountController.source == 1)
+                  Text(
+                    '(${_accountController.accountDto.phoneNumber})',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headline1.copyWith(
+                          fontSize: displayWidth(context) * 0.05,
+                        ),
+                  )
+                else
+                  const SizedBox(),
                 sizedBoxHeight(context, 0.04),
                 if (_accountController.source == 1)
                   Form(
                     key: _formKey,
                     child: Column(
                       children: <Widget>[
-                        BaseInputField(
+                        AppDropdownField(
                           autoFocus: true,
                           inputFocusNode: accountType,
                           labelText: 'Account Type',
-                          inputMaxLength: 10,
                           inputController: accountTypeTextEditingController,
-                          inputType: TextInputType.text,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
+                          items: _accountController.accountType,
                           textInputAction: TextInputAction.next,
                           inputOnFieldSubmitted: (String term) {
+                            accountTypeTextEditingController.text =
+                                term.toString();
                             _fieldFocusChange(
                               context,
                               accountType,
-                              firstName,
+                              title,
                             );
+                          },
+                          onChanged: (String newValue) {
+                            setState(() {
+                              accountTypeTextEditingController.text =
+                                  newValue.toString();
+                              _fieldFocusChange(
+                                context,
+                                accountType,
+                                title,
+                              );
+                            });
                           },
                         ),
                         AppDropdownField(
                           inputFocusNode: title,
                           labelText: 'Title',
-                          inputController: idTypeTextEditingController,
+                          inputController: titleTextEditingController,
                           items: _titles,
                           textInputAction: TextInputAction.next,
                           inputOnFieldSubmitted: (String term) {
+                            titleTextEditingController.text = term.toString();
                             _fieldFocusChange(
                               context,
                               title,
@@ -208,6 +243,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           },
                           onChanged: (String newValue) {
                             setState(() {
+                              titleTextEditingController.text =
+                                  newValue.toString();
                               _fieldFocusChange(
                                 context,
                                 title,
@@ -220,9 +257,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           inputFocusNode: firstName,
                           labelText: 'First Name',
                           inputController: firstNameTextEditingController,
-                          inputType: TextInputType.text,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
+                          inputType: TextInputType.name,
+                          inputLetterSpacing: displayWidth(context) * 0.004,
                           textInputAction: TextInputAction.next,
+                          inputValidator: (String value) {
+                            const String pattern = r'([A-Za-z]$)';
+                            final RegExp regExp = RegExp(pattern);
+                            if (value.isEmpty) {
+                              return 'Please enter your first name';
+                            } else if (!regExp.hasMatch(value)) {
+                              return '''
+First name has to be at least 4 characters long''';
+                            }
+                            debugPrint(value);
+                            return null;
+                          },
                           inputOnFieldSubmitted: (String term) {
                             _fieldFocusChange(
                               context,
@@ -236,14 +285,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           inputFocusNode: surname,
                           labelText: 'Surname',
                           inputController: surnameTextEditingController,
-                          inputType: TextInputType.text,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
+                          inputType: TextInputType.name,
+                          inputLetterSpacing: displayWidth(context) * 0.004,
                           textInputAction: TextInputAction.next,
+                          inputValidator: (String value) {
+                            const String pattern = r'([A-Za-z]$)';
+                            final RegExp regExp = RegExp(pattern);
+                            if (value.isEmpty) {
+                              return 'Please enter your first name';
+                            } else if (!regExp.hasMatch(value)) {
+                              return '''
+Surname has to be at least 4 characters long''';
+                            }
+                            debugPrint(value);
+                            return null;
+                          },
                           inputOnFieldSubmitted: (String term) {
                             _fieldFocusChange(
                               context,
                               surname,
-                              firstName,
+                              dateOfBirth,
                             );
                           },
                         ),
@@ -252,11 +313,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           inputFocusNode: dateOfBirth,
                           labelText: 'Date of Birth',
                           inputController: dateOfBirthTextEditingController,
+                          inputHintText: 'YYYY-MM-DD',
                           inputType: TextInputType.datetime,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
+                          inputLetterSpacing: displayWidth(context) * 0.004,
                           textInputAction: TextInputAction.next,
                           onTap: () => _selectDate(context),
                           inputOnFieldSubmitted: (String term) {
+                            dateOfBirthTextEditingController.text =
+                                term.toString();
                             _fieldFocusChange(
                               context,
                               dateOfBirth,
@@ -273,6 +337,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           items: _idTypes,
                           textInputAction: TextInputAction.next,
                           inputOnFieldSubmitted: (String term) {
+                            idTypeTextEditingController.text = term.toString();
                             _fieldFocusChange(
                               context,
                               idType,
@@ -281,6 +346,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           },
                           onChanged: (String newValue) {
                             setState(() {
+                              idTypeTextEditingController.text =
+                                  newValue.toString();
                               _fieldFocusChange(
                                 context,
                                 idType,
@@ -296,11 +363,24 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           inputType: TextInputType.number,
                           inputLetterSpacing: displayWidth(context) * 0.01,
                           textInputAction: TextInputAction.next,
+                          inputMaxLength: 13,
+                          inputValidator: (String value) {
+                            const String pattern = r'(^[0-9]{13}$)';
+                            final RegExp regExp = RegExp(pattern);
+                            if (value.isEmpty) {
+                              return 'Please enter your selected ID number';
+                            } else if (!regExp.hasMatch(value)) {
+                              return '''
+Please enter a valid 13-digit ID number''';
+                            }
+                            debugPrint(value);
+                            return null;
+                          },
                           inputOnFieldSubmitted: (String term) {
                             _fieldFocusChange(
                               context,
-                              idType,
                               idNumber,
+                              email,
                             );
                           },
                         ),
@@ -310,8 +390,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           labelText: 'Email Address',
                           inputController: emailTextEditingController,
                           inputType: TextInputType.emailAddress,
-                          inputLetterSpacing: displayWidth(context) * 0.01,
+                          inputLetterSpacing: displayWidth(context) * 0.004,
                           textInputAction: TextInputAction.next,
+                          inputValidator: (String value) {
+                            const String pattern =
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+";
+                            final RegExp regExp = RegExp(pattern);
+                            if (value.isEmpty) {
+                              return 'Please enter your email address';
+                            } else if (!regExp.hasMatch(value)) {
+                              return '''
+Please check and enter a valid email address''';
+                            }
+                            debugPrint(value);
+                            return null;
+                          },
                           inputOnFieldSubmitted: (String term) {
                             _fieldFocusChange(
                               context,
@@ -348,6 +441,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               BaseInputField(
                                 inputFocusNode: assistedByAgentCode,
                                 inputHintText: 'Agent Code',
+                                inputMaxLength: 6,
                                 inputController:
                                     assistedByAgentCodeTextEditingController,
                                 inputType: TextInputType.number,
@@ -369,7 +463,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     child: BaseInputField(
                       autoFocus: true,
                       inputFocusNode: phoneNumberFocusNode,
-                      inputHintText: '0212345678 / 0512345678',
+                      inputHintText: '02****5678 / 05****5678',
                       inputLabel: 'Phone Number',
                       inputMaxLength: 10,
                       inputController: phoneNumberTextFieldController,
@@ -402,6 +496,7 @@ Please enter a valid 10-digit mobile number''';
                     Expanded(
                       child: SecondaryButton(
                         onTap: () {
+                          _accountController.source = 0;
                           Get.offAllNamed(WelcomeScreen.routeName);
                         },
                         text: 'Cancel',
@@ -413,8 +508,26 @@ Please enter a valid 10-digit mobile number''';
                         onTap: () async {
                           if (_formKey.currentState.validate()) {
                             if (_accountController.source == 1) {
-                              debugPrintSynchronously(
-                                  _accountController.questions.toString());
+                              _accountController.securityDto.accountType =
+                                  accountTypeTextEditingController.text;
+                              _accountController.securityDto.title =
+                                  titleTextEditingController.text;
+                              _accountController.securityDto.surname =
+                                  surnameTextEditingController.text;
+                              _accountController.securityDto.firstName =
+                                  firstNameTextEditingController.text;
+                              _accountController.securityDto.dateOfBirth =
+                                  selectedDate;
+                              _accountController.securityDto.idType =
+                                  idTypeTextEditingController.text;
+                              _accountController.securityDto.idNumber =
+                                  idNumberTextEditingController.text;
+                              _accountController.securityDto.email =
+                                  emailTextEditingController.text;
+                              _accountController
+                                      .securityDto.assistedByAgentCode =
+                                  assistedByAgentCodeTextEditingController.text;
+
                               Get.toNamed(SecurityScreen.routeName);
                             } else {
                               await _accountController.verifyPhoneNumber(
@@ -442,9 +555,14 @@ Please enter a valid 10-digit mobile number''';
           activeColor: kAccentColor,
           activeTrackColor: kLightPrimaryColor,
           value: switchValue,
-          onChanged: (bool switchValue) => setState(
-            () => this.switchValue = switchValue,
-          ),
+          onChanged: (bool switchValue) => setState(() {
+            this.switchValue = switchValue;
+            _fieldFocusChange(
+              context,
+              switchFocusNode,
+              assistedByAgentCode,
+            );
+          }),
         ),
       );
 }

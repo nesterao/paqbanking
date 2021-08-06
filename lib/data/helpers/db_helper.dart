@@ -12,6 +12,7 @@ class DatabaseHelper {
 
   static const String dbName = 'QuickBanking';
   static const String tableUserAccounts = 'UserAccounts';
+  static const String tableUserTransactions = 'UserTransactions';
 
   static DatabaseHelper _databaseHelper;
   static Database _database;
@@ -36,12 +37,23 @@ CREATE TABLE $tableUserAccounts (
   tokenExpiry TEXT,
   availableBalance REAL,
   actualBalance REAL,
-  name TEXT,
   accountType TEXT,
   firstName TEXT,
   surname TEXT,
   isQuickAccount INTEGER,
   kycLevel TEXT)
+''');
+
+    await db.execute('''
+CREATE TABLE $tableUserTransactions ( 
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  transactionId INTEGER,
+  createdAt TEXT,
+  description TEXT,
+  amount REAL,
+  charge REAL,
+  userPhoneNumber TEXT NOT NULL,
+  FOREIGN KEY(userPhoneNumber) REFERENCES $tableUserAccounts(phoneNumber))
 ''');
   }
 

@@ -63,6 +63,14 @@ class _AppDropdownFieldState extends State<AppDropdownField> {
     ));
   }
 
+  InputBorder _focusedBorderDecoration() {
+    return UnderlineInputBorder(
+        borderSide: BorderSide(
+      color: Get.isDarkMode ? kDarkSecondaryColor : kDarkPrimaryColor,
+      width: 2,
+    ));
+  }
+
   InputBorder _errorBorderDecoration() {
     return const UnderlineInputBorder(
         borderSide: BorderSide(
@@ -96,15 +104,17 @@ class _AppDropdownFieldState extends State<AppDropdownField> {
           validator: widget.inputValidator,
           onTap: widget.onTap,
           onChanged: widget.onChanged,
+          autovalidateMode: AutovalidateMode.always,
           icon: Icon(
             Icons.arrow_drop_down,
             color: Get.isDarkMode ? kAccentColor : kLightPrimaryColor,
             size: displayWidth(context) * 0.06,
           ),
           elevation: 0,
-          style: TextStyle(
-            color: Get.isDarkMode ? kDarkSecondaryColor : kLightPrimaryColor,
-          ),
+          style: Theme.of(context).textTheme.headline1.copyWith(
+                color: Get.isDarkMode ? kAccentColor : kDarkPrimaryColor,
+                fontSize: displayWidth(context) * 0.05,
+              ),
           decoration: InputDecoration(
             labelText: widget.inputLabel,
             errorText: widget.inputErrorText,
@@ -123,10 +133,11 @@ class _AppDropdownFieldState extends State<AppDropdownField> {
               color: Get.isDarkMode ? kDarkTertiaryColor : kLightPrimaryColor,
             ),
             enabledBorder: _borderDecoration(),
-            focusedBorder: _borderDecoration(),
+            focusedBorder: _focusedBorderDecoration(),
             border: _borderDecoration(),
             errorBorder: _errorBorderDecoration(),
           ),
+          isExpanded: true,
           items: widget.items.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
