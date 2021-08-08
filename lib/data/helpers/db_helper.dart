@@ -91,8 +91,6 @@ CREATE TABLE $tableUserTransactions (
 
     final int _count = Sqflite.firstIntValue(
         await db.rawQuery('SELECT COUNT(*) FROM $tableUserAccounts'));
-    // final int count =
-    // (await db.rawQuery('SELECT COUNT(*) FROM $tableUserAccounts')).length;
     return _count != null && _count > 0;
   }
 
@@ -100,7 +98,6 @@ CREATE TABLE $tableUserTransactions (
     final Database db = await database;
 
     final List<Map<String, Object>> count = await db.rawQuery(
-      // ignore: avoid_escaping_inner_quotes
       'SELECT * FROM $tableUserAccounts WHERE phoneNumber = $phoneNumber',
     );
     return count.isNotEmpty;

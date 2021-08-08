@@ -50,7 +50,8 @@ class _OTPVerificationState extends State<OTPVerification> {
   Widget build(BuildContext context) {
     Future<dynamic> submit() async {
       if (_formKey.currentState.validate()) {
-        _accountController.validateOTP(_otpVerificationController.text);
+        _accountController.accountDto.otp = _otpVerificationController.text;
+        _accountController.validateOTP();
         setState(() {
           _otpVerificationController.text = '';
         });
@@ -86,7 +87,7 @@ class _OTPVerificationState extends State<OTPVerification> {
                       ),
                       sizedBoxHeight(context, 0.02),
                       Text(
-                        '(${_accountController.accountDto.phoneNumber})',
+                        '(${_accountController.accountDto.accountDetails.phoneNumber})',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headline6.copyWith(
                               letterSpacing: 4,
@@ -151,9 +152,7 @@ class _OTPVerificationState extends State<OTPVerification> {
                       sizedBoxHeight(context, 0.04),
                       TextButton(
                         onPressed: () {
-                          _accountController.verifyPhoneNumber(
-                            _accountController.accountDto.phoneNumber,
-                          );
+                          _accountController.verifyPhoneNumber();
                         },
                         child: Text(
                           'Resend code'.toUpperCase(),

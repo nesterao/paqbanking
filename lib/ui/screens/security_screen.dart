@@ -74,11 +74,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_accountController.source == 1) {
-      _question1List = _accountController.formContent.questions
-          .map((Question e) => e.text)
-          .toList();
-    }
+    _question1List = _accountController.formContent.questions
+        .map((Question e) => e.text)
+        .toList();
 
     return BaseBody(
       appBar: baseAppBar(
@@ -117,8 +115,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         inputLetterSpacing: displayWidth(context) * 0.004,
                         textInputAction: TextInputAction.next,
                         inputValidator: (String value) {
-                          const String pattern = r'([A-Za-z]$)';
-                          final RegExp regExp = RegExp(pattern);
+                          // const String pattern = r'([A-Za-z]$)';
+                          // final RegExp regExp = RegExp(pattern);
                           if (value.isEmpty) {
                             return 'Please enter your first name';
                           }
@@ -251,7 +249,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                               _accountController.securityDto.answer2 =
                                   answer2TextEditingController.text;
 
-                              Get.toNamed(PinInput.routeName);
+                              if (_accountController
+                                  .accountDto.isQuickAccount) {
+                                _accountController.linkAccount();
+                              } else {
+                                Get.toNamed(PinInput.routeName);
+                              }
                             }
                           }),
                     ),

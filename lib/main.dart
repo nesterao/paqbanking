@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:pa_quick_banking/data/controller/account_controller.dart';
 
+import './data/controller/exported_controllers.dart';
 import './data/helpers/db_helper.dart';
 import './shared/exported_shared.dart';
 import './ui/screens/exported_screens.dart';
@@ -24,6 +24,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final DatabaseHelper databaseHelper = DatabaseHelper();
+  // final AccountController _accountController = Get.find();
 
   @override
   void initState() {
@@ -36,9 +37,12 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> checkLinkedAccounts() async {
     final bool _linkedUserAccounts = await databaseHelper.tableIsNotEmpty();
-    _linkedUserAccounts
-        ? Get.offAllNamed(LoginScreen.routeName)
-        : Get.offAllNamed(WelcomeScreen.routeName);
+    if (_linkedUserAccounts) {
+      AccountController().getAccountInDB();
+      Get.offAllNamed(LoginScreen.routeName);
+    } else {
+      Get.offAllNamed(WelcomeScreen.routeName);
+    }
   }
 
   @override

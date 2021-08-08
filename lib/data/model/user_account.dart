@@ -98,6 +98,31 @@ class UserAccount {
       };
 }
 
+class User {
+  User({
+    this.firstName,
+    this.surname,
+  });
+
+  factory User.fromJson(String str) =>
+      User.fromMap(json.decode(str) as Map<String, dynamic>);
+
+  factory User.fromMap(Map<String, dynamic> json) => User(
+        firstName: json['firstName'] as String,
+        surname: json['surname'] as String,
+      );
+
+  String firstName;
+  String surname;
+
+  String toJson() => json.encode(toMap());
+
+  Map<String, dynamic> toMap() => <String, dynamic>{
+        'firstName': firstName,
+        'surname': surname,
+      };
+}
+
 class Transaction {
   Transaction({
     this.id,

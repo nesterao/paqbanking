@@ -185,7 +185,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
                 if (_accountController.source == 1)
                   Text(
-                    '(${_accountController.accountDto.phoneNumber})',
+                    '(${_accountController.accountDto.accountDetails.phoneNumber})',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headline1.copyWith(
                           fontSize: displayWidth(context) * 0.05,
@@ -463,7 +463,7 @@ Please check and enter a valid email address''';
                     child: BaseInputField(
                       autoFocus: true,
                       inputFocusNode: phoneNumberFocusNode,
-                      inputHintText: '02****5678 / 05****5678',
+                      inputHintText: '02******** / 05********',
                       inputLabel: 'Phone Number',
                       inputMaxLength: 10,
                       inputController: phoneNumberTextFieldController,
@@ -530,8 +530,10 @@ Please enter a valid 10-digit mobile number''';
 
                               Get.toNamed(SecurityScreen.routeName);
                             } else {
-                              await _accountController.verifyPhoneNumber(
-                                  phoneNumberTextFieldController.text);
+                              _accountController
+                                      .accountDto.accountDetails.phoneNumber =
+                                  phoneNumberTextFieldController.text;
+                              await _accountController.verifyPhoneNumber();
                             }
                           }
                         },

@@ -54,11 +54,8 @@ class _PinInputState extends State<PinInput> {
   Widget build(BuildContext context) {
     Future<dynamic> submit() async {
       if (_formKey.currentState.validate()) {
-        if (_accountController.source == 1 &&
-            _pinPut1Controller.text == _pinPut2Controller.text) {
-          _accountController.securityDto.pin = _pinPut2Controller.text;
-          _accountController.createNewAccount();
-        }
+        _accountController.securityDto.pin = _pinPut2Controller.text;
+        _accountController.validatePIN();
         //TODO: Make Call to login function
         setState(() {
           _pinPut1Controller.text = '';
@@ -89,8 +86,9 @@ class _PinInputState extends State<PinInput> {
                     children: <Widget>[
                       Text(
                         _accountController.source == 1
-                            ? 'Hello ${_accountController.securityDto.firstName},'
-                            : 'Hello Link Account Name',
+                            ? 'Hello '
+                                '${_accountController.securityDto.firstName},'
+                            : 'Hello ${_accountController.accountDto.accountDetails.name}',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headline1.copyWith(
                               fontSize: displayWidth(context) * 0.05,
@@ -98,7 +96,8 @@ class _PinInputState extends State<PinInput> {
                       ),
                       sizedBoxHeight(context, 0.02),
                       Text(
-                        _accountController.source == 1
+                        _accountController.source == 1 ||
+                                !_accountController.accountDto.isQuickAccount
                             ? 'Enter your new 4 digit PIN'
                             : 'Please enter your 4 digit PIN',
                         textAlign: TextAlign.center,
@@ -107,7 +106,8 @@ class _PinInputState extends State<PinInput> {
                             ),
                       ),
                       sizedBoxHeight(context, 0.02),
-                      if (_accountController.source == 1)
+                      if (_accountController.source == 1 ||
+                          !_accountController.accountDto.isQuickAccount)
                         Column(
                           children: <Widget>[
                             BasePinInput(
@@ -146,18 +146,18 @@ class _PinInputState extends State<PinInput> {
                                     fontSize: displayWidth(context) * 0.05,
                                   ),
                             ),
-                            sizedBoxHeight(context, 0.02),
                           ],
                         )
                       else
                         Text(
-                          '(${_accountController.accountDto.phoneNumber})',
+                          '(${_accountController.accountDto.accountDetails.phoneNumber})',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headline6.copyWith(
                                 letterSpacing: 4,
                                 fontSize: displayWidth(context) * 0.05,
                               ),
                         ),
+                      sizedBoxHeight(context, 0.04),
                       BasePinInput(
                         autoFocus: true,
                         length: 4,
@@ -165,8 +165,10 @@ class _PinInputState extends State<PinInput> {
                         pinPutFocusNode: _pinPut2FocusNode,
                         pinPutController: _pinPut2Controller,
                         submit: (_) {
-                          if (_pinPut1Controller.text !=
-                              _pinPut2Controller.text) {
+                          if (_accountController.source == 1 ||
+                              !_accountController.accountDto.isQuickAccount &&
+                                  _pinPut1Controller.text !=
+                                      _pinPut2Controller.text) {
                             DialogHelper.showErrorSnackBar(
                                 'Your PIN do not match');
                             _pinPut1Controller.text = '';
@@ -220,7 +222,17 @@ class _PinInputState extends State<PinInput> {
                       ),
                       PrimaryButton(
                         text: 'Submit',
-                        onTap: submit,
+                        onTap: () {
+                          if (_pinPut1Controller.text !=
+                              _pinPut2Controller.text) {
+                            DialogHelper.showErrorSnackBar(
+                                'Your PIN do not match');
+                            _pinPut1Controller.text = '';
+                            _pinPut2Controller.text = '';
+                          } else {
+                            submit();
+                          }
+                        },
                       ),
                     ],
                   ),

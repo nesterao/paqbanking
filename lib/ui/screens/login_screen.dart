@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:get/get.dart';
+import 'package:pa_quick_banking/data/model/exported_models.dart';
 
+import '../../data/controller/exported_controllers.dart';
 import '../../shared/exported_shared.dart';
 import '../screens/exported_screens.dart';
 import '../widgets/exported_widgets.dart';
@@ -14,50 +17,50 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   static int _swiperIndex = 0;
+  final AccountController _accountController = Get.find();
 
   @override
   void initState() {
     // TODO: implement initState
-    // _accountController.getAccountInDB();
     super.initState();
   }
 
-  // Widget _buildSwiperList(AccountInDB accountInDB, int index) {
-  //   return Card(
-  //     color: Get.isDarkMode ? kDarkPrimaryColor : kContentColorDarkTheme,
-  //     elevation: 4,
-  //     shape: RoundedRectangleBorder(
-  //       side: const BorderSide(
-  //         color: kAccentColor,
-  //       ),
-  //       borderRadius: BorderRadius.circular(6),
-  //     ),
-  //     child: Center(
-  //       child: ListTile(
-  //         horizontalTitleGap: 14,
-  //         leading: Icon(
-  //           Icons.phone_android_outlined,
-  //           size: displayWidth(context) * 0.12,
-  //           color: Get.isDarkMode ? kDarkSecondaryColor : kLightTertiaryColor,
-  //         ),
-  //         title: Text(
-  //           FormatUtils.formatPhoneNumber(accountInDB.phoneNumber),
-  //           style: Theme.of(context).textTheme.headline6.copyWith(
-  //                 letterSpacing: 4,
-  //                 fontSize: displayWidth(context) * 0.06,
-  //               ),
-  //         ),
-  //         subtitle: Text(
-  //           '(${FormatUtils.formatAccountNumber(accountInDB.accountNumber)})',
-  //           style: Theme.of(context).textTheme.headline1.copyWith(
-  //                 letterSpacing: 2,
-  //                 fontSize: displayWidth(context) * 0.05,
-  //               ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _buildSwiperList(UserAccount accountInDB, int index) {
+    return Card(
+      color: Get.isDarkMode ? kDarkPrimaryColor : kContentColorDarkTheme,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(
+          color: kAccentColor,
+        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Center(
+        child: ListTile(
+          horizontalTitleGap: 14,
+          leading: Icon(
+            Icons.phone_android_outlined,
+            size: displayWidth(context) * 0.12,
+            color: Get.isDarkMode ? kDarkSecondaryColor : kLightTertiaryColor,
+          ),
+          title: Text(
+            FormatUtils.formatPhoneNumber(accountInDB.phoneNumber),
+            style: Theme.of(context).textTheme.headline6.copyWith(
+                  letterSpacing: 4,
+                  fontSize: displayWidth(context) * 0.06,
+                ),
+          ),
+          subtitle: Text(
+            '(${FormatUtils.formatAccountNumber(accountInDB.accountNumber)})',
+            style: Theme.of(context).textTheme.headline1.copyWith(
+                  letterSpacing: 2,
+                  fontSize: displayWidth(context) * 0.05,
+                ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,32 +86,34 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                   ),
                 ),
-                // SizedBox(
-                //   height: displayWidth(context) * 0.4,
-                //   width: displayWidth(context),
-                //   child: Swiper(
-                //     index: _swiperIndex,
-                //     loop: false,
-                //     itemCount: _authController.accountInDBList.length,
-                //     viewportFraction: 0.86,
-                //     scale: 0.93,
-                //     itemBuilder: (BuildContext context, int index) {
-                //       _accountInDB = _authController.accountInDBList[index];
-                //       return _buildSwiperList(_accountInDB, index);
-                //     },
-                //     onIndexChanged: (int index) {
-                //       _swiperIndex = index;
-                //     },
-                //     pagination: const SwiperPagination(
-                //       builder: DotSwiperPaginationBuilder(
-                //         size: 8,
-                //         color: Colors.grey,
-                //         activeColor: kAccentColor,
-                //         activeSize: 12,
-                //       ),
-                //     ),
-                //   ),
-                // ),
+                SizedBox(
+                  height: displayWidth(context) * 0.4,
+                  width: displayWidth(context),
+                  child: Swiper(
+                    index: _swiperIndex,
+                    loop: false,
+                    itemCount: _accountController.accountInDBList.length,
+                    viewportFraction: 0.86,
+                    scale: 0.93,
+                    itemBuilder: (BuildContext context, int index) {
+                      final UserAccount _accountInDB =
+                          _accountController.accountInDBList[index];
+                      return _buildSwiperList(_accountInDB, index);
+                    },
+                    onIndexChanged: (int index) {
+                      _swiperIndex = index;
+                    },
+                    pagination: const SwiperPagination(
+                      builder: DotSwiperPaginationBuilder(
+                        size: 8,
+                        color: Colors.grey,
+                        activeColor: kAccentColor,
+                        activeSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+
                 sizedBoxHeight(context, 0.08),
                 Padding(
                   padding: EdgeInsets.symmetric(

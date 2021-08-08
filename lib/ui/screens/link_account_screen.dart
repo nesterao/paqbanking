@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:pa_quick_banking/data/controller/account_controller.dart';
 
 import '../../shared/exported_shared.dart';
 import '../widgets/exported_widgets.dart';
@@ -17,7 +18,7 @@ class LinkAccountScreen extends StatefulWidget {
 
 class _LinkAccountScreenState extends State<LinkAccountScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  // final AccountController _accountController = AccountController();
+  final AccountController _accountController = Get.find();
 
   final TextEditingController _phoneNumberTextFieldController =
       TextEditingController();
@@ -88,6 +89,7 @@ class _LinkAccountScreenState extends State<LinkAccountScreen> {
                   BaseInputField(
                     autoFocus: true,
                     inputFocusNode: phoneNumberFocusNode,
+                    inputHintText: '02******** / 05********',
                     inputLabel: 'Phone Number',
                     inputMaxLength: 10,
                     inputController: _phoneNumberTextFieldController,
@@ -95,7 +97,7 @@ class _LinkAccountScreenState extends State<LinkAccountScreen> {
                     inputLetterSpacing: displayWidth(context) * 0.01,
                     textInputAction: TextInputAction.next,
                     inputFormatter: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp('[0-9]+')),
+                      FilteringTextInputFormatter.allow(RegExp('[0-9]')),
                     ],
                     inputValidator: (String value) {
                       const String pattern = r'(^0[2,5]{1}[0-9]+$)';
@@ -161,11 +163,13 @@ Please enter a valid 10-digit mobile number''';
                           child: PrimaryButton(
                             onTap: () async {
                               if (_formKey.currentState.validate()) {
-                                // await _accountController.checkLinkAccount(
-                                //     phoneNumber:
-                                //         _phoneNumberTextFieldController.text,
-                                //     accountNumber:
-                                //         _accountNumberTextFieldController.text);
+                                _accountController
+                                        .accountDto.accountDetails.phoneNumber =
+                                    _phoneNumberTextFieldController.text;
+                                _accountController.accountDto.accountDetails
+                                        .accountNumber =
+                                    _accountNumberTextFieldController.text;
+                                _accountController.checkAccountLink();
                               }
                             },
                             text: 'Next',
